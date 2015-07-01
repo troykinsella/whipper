@@ -82,7 +82,7 @@ describe('worker-handle', function() {
           return wh.discoverInterface();
         })
         .then(function(reply) {
-          reply.iface.should.deep.equal([ 'hello', 'returnError', 'throwError', 'waitFor' ]);
+          reply.iface.should.deep.equal([ 'hello', 'returnError', 'throwError', 'waitFor', 'throwErrorAfter' ]);
           done();
         }).fail(done);
     });
@@ -100,6 +100,20 @@ describe('worker-handle', function() {
           reply.should.equal('received: foo');
           done();
         }).fail(done);
+    });
+
+    it('should fail calling a non-existent method', function(done) {
+      wh = createWH(1);
+      wh.fork()
+        .then(function() {
+          return wh.invoke('garbage', 'arg');
+        })
+        .then(function(reply) {
+          done(new Error("Call succeeded: ", reply));
+        })
+        .fail(function(err) {
+          done();
+        });
     });
 
   });
