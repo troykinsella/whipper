@@ -5,7 +5,9 @@ var Q = require('q');
 var chai = require('chai');
 var should = chai.should();
 var expect = chai.expect;
+
 var WorkerHandle = require('../../lib/worker-handle');
+var InvocationTimeoutError = require('../../lib/error/invocation-timeout-error');
 var testUtil = require('../util');
 var testWorkerPath = require.resolve('../fixtures/test-worker');
 
@@ -93,7 +95,10 @@ describe('worker-handle', function() {
   describe("#invoke", function() {
 
     function expectResult(method, done) {
-      wh = createWH(1);
+      if (!wh) {
+        wh = createWH(1);
+      }
+
       wh.fork()
         .then(function() {
           return wh.invoke(method, 'foo');
@@ -104,18 +109,27 @@ describe('worker-handle', function() {
         }).fail(done);
     }
 
-    function expectError(method, done, expectedMessage) {
-      wh = createWH(1);
+    function expectError(method, args, expectedType, expectedMessage, done) {
+      if (!wh) {
+        wh = createWH(1);
+      }
+
       wh.fork()
         .then(function() {
-          return wh.invoke(method);
+          return wh.invoke(method, args);
         })
         .then(function(reply) {
           done(new Error("Call succeeded: ", reply));
         })
         .fail(function(err) {
-          if (err.message !== (expectedMessage || 'I suck')) {
-            done(new AssertionError("Unexpected reply error message: " + err.message));
+          if (!err) {
+            return done(new Error("Did not receive an error"));
+          }
+          if (!(err instanceof expectedType)) {
+            return done(new Error("Did not receive error type " + expectedType.type + ": " + err));
+          }
+          if (err.message !== expectedMessage) {
+            return done(new Error("Unexpected reply error message: " + err.message));
           }
           done();
         });
@@ -166,32 +180,40 @@ describe('worker-handle', function() {
     });
 
     it('should fail calling a non-existent method', function(done) {
-      expectError('garbage', done, 'Worker method not found: garbage');
+      expectError('garbage', [], Error, 'Worker method not found: garbage', done);
     });
 
     it('should fail calling a worker method that returns an error', function(done) {
-      expectError('returnError', done);
+      expectError('returnError', [], Error, 'I suck', done);
     });
 
     it('should fail calling a worker method that throws an error', function(done) {
-      expectError('throwError', done);
+      expectError('throwError', [], Error, 'I suck', done);
     });
 
     it('should fail calling a worker method that calls back an error now', function(done) {
-      expectError('callbackErrorNow', done);
+      expectError('callbackErrorNow', [], Error, 'I suck', done);
     });
 
     it('should fail calling a worker method that calls back an error later', function(done) {
-      expectError('callbackErrorLater', done);
+      expectError('callbackErrorLater', [], Error, 'I suck', done);
     });
 
     it('should fail calling a worker method that promises an error now', function(done) {
-      expectError('promiseErrorNow', done);
+      expectError('promiseErrorNow', [], Error, 'I suck', done);
     });
 
     it('should fail calling a worker method that promises an error later', function(done) {
-      expectError('promiseErrorLater', done);
+      expectError('promiseErrorLater', [], Error, 'I suck', done);
     });
+
+    it('should fail calling a worker method that takes longer to complete than the configured timeout', function(done) {
+      wh = createWH(1, {
+        invocationTimeout: 500
+      });
+      expectError('waitFor', [ 700 ], InvocationTimeoutError, undefined, done);
+    });
+
   });
 
 });
