@@ -1,4 +1,4 @@
-# whipper [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
+# whipper [![NPM version][npm-image]][npm-url]
 > A child process management library for node.js
 
 
@@ -17,6 +17,11 @@ var whipper = require('whipper');
 whipper('Rainbow');
 ```
 
+## Versioning
+
+While in the 0.x.x range of versions, which denote alpha status, releases may introduce backwards incompatible changes.
+Following a 1.x.x release, standard semantic versioning will apply regarding public api-breaking changes.
+
 ## License
 
 MIT © [Troy Kinsella]()
@@ -24,7 +29,4 @@ MIT © [Troy Kinsella]()
 
 [npm-image]: https://badge.fury.io/js/whipper.svg
 [npm-url]: https://npmjs.org/package/whipper
-[travis-image]: https://travis-ci.org//whipper.svg?branch=master
-[travis-url]: https://travis-ci.org//whipper
-[daviddm-image]: https://david-dm.org//whipper.svg?theme=shields.io
-[daviddm-url]: https://david-dm.org//whipper
+

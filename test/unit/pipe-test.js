@@ -64,7 +64,7 @@ describe('pipe', function() {
       p.send({ foo: 'bar' }).then(function(reply) {
         reply.should.deep.equal({ foo: 'bar' });
         done();
-      });
+      }).fail(done);
     });
 
     it('should begin queueing when maxPending met', function(done) {
@@ -92,7 +92,7 @@ describe('pipe', function() {
       p.send({ bar: 'baz' }).then(function(reply) {
         reply.should.deep.equal({ bar: 'baz' });
         done();
-      });
+      }).fail(done);
 
       p.queued().should.equal(1);
       p.pending().should.equal(1);
@@ -108,7 +108,7 @@ describe('pipe', function() {
 
     it('should resolve immediately when no pending and queued', function(done) {
       var p = createPipe();
-      p.flush().then(done);
+      p.flush().then(done).fail(done);
     });
 
     it('should resolve when pending returns and no queued', function(done) {
@@ -125,15 +125,17 @@ describe('pipe', function() {
         }, 0);
       });
 
-      p.send({ foo: 'bar' });
+      p.send({ foo: 'bar' })
+        .fail(done);
+
       p.flush().then(function() {
         p.queued().should.equal(0);
         p.pending().should.equal(0);
         done();
-      });
+      }).fail(done);
     });
 
-    it('should resolve when pending and queued', function() {
+    it('should resolve when pending and queued', function(done) {
 
       var p = createPipe();
       var receiver = p.receiver();
@@ -148,14 +150,16 @@ describe('pipe', function() {
         }, 0);
       });
 
-      p.send({ foo: 'bar' });
-      p.send({ bar: 'baz' });
+      p.send({ foo: 'bar' })
+        .fail(done);
+      p.send({ bar: 'baz' })
+        .fail(done);
 
       p.flush().then(function() {
         p.queued().should.equal(0);
         p.pending().should.equal(0);
         done();
-      });
+      }).fail(done);
     });
 
   });

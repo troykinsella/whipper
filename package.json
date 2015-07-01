@@ -33,9 +33,9 @@
   },
   "license": "MIT",
   "dependencies": {
-    "deferred": "^0.7.2",
     "joi": "^6.5.0",
     "linked-map": "^2.1.0",
-    "lodash": "^3.9.3"
+    "lodash": "^3.9.3",
+    "q": "^1.4.1"
   }
 }
