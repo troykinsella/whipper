@@ -6,8 +6,10 @@ var chai = require('chai');
 var should = chai.should();
 var expect = chai.expect;
 var WorkerHandle = require('../../lib/worker-handle');
+var testUtil = require('../util');
 var testWorkerPath = require.resolve('../fixtures/test-worker');
 
+var testWorkerInterface = testUtil.getTestWorkerInterface();
 var testEmitter;
 var wh;
 
@@ -82,7 +84,7 @@ describe('worker-handle', function() {
           return wh.discoverInterface();
         })
         .then(function(reply) {
-          reply.iface.should.deep.equal([ 'hello', 'returnError', 'throwError', 'waitFor', 'throwErrorAfter' ]);
+          reply.iface.should.deep.equal(testWorkerInterface);
           done();
         }).fail(done);
     });
@@ -90,32 +92,106 @@ describe('worker-handle', function() {
 
   describe("#invoke", function() {
 
-    it('should call a worker method', function(done) {
+    function expectResult(method, done) {
       wh = createWH(1);
       wh.fork()
         .then(function() {
-          return wh.invoke('hello', 'foo');
+          return wh.invoke(method, 'foo');
         })
         .then(function(reply) {
           reply.should.equal('received: foo');
           done();
         }).fail(done);
-    });
+    }
 
-    it('should fail calling a non-existent method', function(done) {
+    function expectError(method, done, expectedMessage) {
       wh = createWH(1);
       wh.fork()
         .then(function() {
-          return wh.invoke('garbage', 'arg');
+          return wh.invoke(method);
         })
         .then(function(reply) {
           done(new Error("Call succeeded: ", reply));
         })
         .fail(function(err) {
+          if (err.message !== (expectedMessage || 'I suck')) {
+            done(new AssertionError("Unexpected reply error message: " + err.message));
+          }
           done();
         });
+    }
+
+    it('should succeed calling a worker method that returns a result', function(done) {
+      expectResult('returnResult', done);
     });
 
+    it('should succeed calling a worker method that returns two results', function(done) {
+      wh = createWH(1);
+      wh.fork()
+        .then(function() {
+          return wh.invoke('returnTwoResults', [ 'foo', 'bar' ]);
+        })
+        .then(function(reply) {
+          reply.should.deep.equal([ 'foo', 'bar' ]);
+          done();
+        }).fail(done);
+    });
+
+    it('should succeed calling a worker method that returns three results', function(done) {
+      wh = createWH(1);
+      wh.fork()
+        .then(function() {
+          return wh.invoke('returnThreeResults', [ 'foo', 'bar', 'baz' ]);
+        })
+        .then(function(reply) {
+          reply.should.deep.equal([ 'foo', 'bar', 'baz' ]);
+          done();
+        }).fail(done);
+    });
+
+    it('should succeed calling a worker method that calls back a result now', function(done) {
+      expectResult('callbackResultNow', done);
+    });
+
+    it('should succeed calling a worker method that calls back a result later', function(done) {
+      expectResult('callbackResultLater', done);
+    });
+
+    it('should succeed calling a worker method that promises a result now', function(done) {
+      expectResult('promiseResultNow', done);
+    });
+
+    it('should succeed calling a worker method that promises a result later', function(done) {
+      expectResult('promiseResultLater', done);
+    });
+
+    it('should fail calling a non-existent method', function(done) {
+      expectError('garbage', done, 'Worker method not found: garbage');
+    });
+
+    it('should fail calling a worker method that returns an error', function(done) {
+      expectError('returnError', done);
+    });
+
+    it('should fail calling a worker method that throws an error', function(done) {
+      expectError('throwError', done);
+    });
+
+    it('should fail calling a worker method that calls back an error now', function(done) {
+      expectError('callbackErrorNow', done);
+    });
+
+    it('should fail calling a worker method that calls back an error later', function(done) {
+      expectError('callbackErrorLater', done);
+    });
+
+    it('should fail calling a worker method that promises an error now', function(done) {
+      expectError('promiseErrorNow', done);
+    });
+
+    it('should fail calling a worker method that promises an error later', function(done) {
+      expectError('promiseErrorLater', done);
+    });
   });
 
 });
