@@ -26,7 +26,7 @@ function isProcessRunning(pid) {
 
 function createWH(id, options) {
   options = options || {};
-  options.maxPending = options.maxPending || 1;
+  options.maxConcurrentCallsPerWorker = options.maxConcurrentCallsPerWorker || 1;
 
   options.workerModulePath = testWorkerPath;
   options.logger = console.log;
@@ -53,6 +53,7 @@ describe('worker-handle', function() {
     expect(wh.exitCode()).to.be.null;
 
     wh.isIdle().should.be.true;
+    wh.pendingCalls().should.equal(0);
     wh.queuedCalls().should.equal(0);
     wh.atCapacity().should.be.false;
     wh.isAvailable().should.be.false;
@@ -68,6 +69,9 @@ describe('worker-handle', function() {
         isProcessRunning(wh.pid()).should.be.true;
         wh.state().should.equal(WorkerHandle.State.processing);
         wh.isAvailable().should.be.true;
+
+        wh.pendingCalls().should.equal(0);
+        wh.queuedCalls().should.equal(0);
 
         done();
       }).fail(done);
@@ -122,6 +126,8 @@ describe('worker-handle', function() {
           done(new Error("Call succeeded: ", reply));
         })
         .fail(function(err) {
+          // We can't throw an exception in here and see the result in test output
+          // because we're already in the fail() handler. So, call done with an Error for failed assertions.
           if (!err) {
             return done(new Error("Did not receive an error"));
           }
@@ -212,6 +218,81 @@ describe('worker-handle', function() {
         invocationTimeout: 500
       });
       expectError('waitFor', [ 700 ], InvocationTimeoutError, undefined, done);
+    });
+
+  });
+
+  describe('#flush', function() {
+
+    it('should resolve when no calls pending or queued', function(done) {
+      wh = createWH(1);
+      wh.fork()
+        .then(function() {
+          wh.pendingCalls().should.equal(0);
+          wh.queuedCalls().should.equal(0);
+
+          wh.flush()
+            .then(function() {
+              wh.state().should.equal(WorkerHandle.State.processing);
+              wh.pendingCalls().should.equal(0);
+              wh.queuedCalls().should.equal(0);
+            })
+            .fail(done);
+
+          wh.state().should.equal(WorkerHandle.State.flushing);
+
+          done();
+        }).fail(done);
+    });
+
+    it('should resolve after pending calls complete', function(done) {
+      wh = createWH(1);
+      wh.fork()
+        .then(function() {
+          wh.invoke('waitFor', [ 100 ]);
+
+          wh.pendingCalls().should.equal(1);
+          wh.queuedCalls().should.equal(0);
+
+          wh.flush()
+            .then(function() {
+              wh.state().should.equal(WorkerHandle.State.processing);
+              wh.pendingCalls().should.equal(0);
+              wh.queuedCalls().should.equal(0);
+              done();
+            })
+            .fail(done);
+
+          wh.state().should.equal(WorkerHandle.State.flushing);
+        })
+        .fail(done);
+
+    });
+
+    it('should resolve after queued calls complete', function(done) {
+      wh = createWH(1);
+      wh.fork()
+        .then(function() {
+          wh.invoke('waitFor', [ 100 ]);
+          wh.invoke('waitFor', [ 200 ]);
+          wh.invoke('waitFor', [ 300 ]);
+
+          wh.pendingCalls().should.equal(1);
+          wh.queuedCalls().should.equal(2);
+
+          wh.flush()
+            .then(function() {
+              wh.state().should.equal(WorkerHandle.State.processing);
+              wh.pendingCalls().should.equal(0);
+              wh.queuedCalls().should.equal(0);
+              done();
+            })
+            .fail(done);
+
+          wh.state().should.equal(WorkerHandle.State.flushing);
+        })
+        .fail(done);
+
     });
 
   });
