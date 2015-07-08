@@ -58,5 +58,15 @@ module.exports = {
   },
   waitFor: function(ms, callback) {
     setTimeout(callback, ms);
+  },
+  spin: function(callback) {
+    var spin = function() {
+      for (var i = 0; i < 1000000000; i++) {
+        // Nothing
+      }
+      setTimeout(spin, 0);
+    };
+    callback();
+    spin();
   }
 };

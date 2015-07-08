@@ -24,6 +24,15 @@ function isProcessRunning(pid) {
   }
 }
 
+function forceKill(pid) {
+  try {
+    process.kill(pid);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function createWH(id, options) {
   options = options || {};
   options.maxConcurrentCallsPerWorker = options.maxConcurrentCallsPerWorker || 1;
@@ -37,11 +46,19 @@ function createWH(id, options) {
 
 describe('worker-handle', function() {
 
+  var pids = [];
+
   beforeEach(function() {
     testEmitter = new EventEmitter();
+    testEmitter.once("worker:pid:created", function(pid) {
+      pids.push(pid);
+    });
   });
 
   afterEach(function() {
+    pids.forEach(function(pid) {
+      forceKill(pid);
+    });
     wh = null;
   });
 
@@ -295,6 +312,91 @@ describe('worker-handle', function() {
 
     });
 
+  });
+
+  describe("#kill", function() {
+
+    it('should gracefully kill the existing process', function(done) {
+      wh = createWH(1);
+      wh.fork()
+        .then(function() {
+          var pid = wh.pid();
+          wh.kill().then(function() {
+            isProcessRunning(pid).should.be.false;
+            done();
+          })
+          .fail(done);
+
+          isProcessRunning(pid).should.be.true;
+          wh.state().should.equal(WorkerHandle.State.dying);
+        })
+        .fail(done);
+    });
+
+    it('should force kill the existing process after forceKillTimeout', function(done) {
+
+      var to = 500;
+      var cbGrace = 50;
+
+      wh = createWH(1, {
+        forceKillTimeout: to
+      });
+      wh.fork()
+        .then(function() {
+          return wh.invoke('spin');
+        })
+        .then(function() {
+          var pid = wh.pid();
+
+          var killStart = Date.now();
+          wh.kill()
+            .then(function() {
+              var killEnd = Date.now();
+              var killTime = (killEnd - killStart);
+
+              isProcessRunning(pid).should.be.false;
+              killTime.should.be.above(to);
+              killTime.should.be.below(to + cbGrace);
+
+              done();
+            })
+            .fail(done);
+
+          isProcessRunning(pid).should.be.true;
+          wh.state().should.equal(WorkerHandle.State.dying);
+        })
+        .fail(done);
+    });
+
+    it('should force kill the existing process', function(done) {
+      var cbGrace = 50;
+
+      wh = createWH(1);
+      wh.fork()
+        .then(function() {
+          return wh.invoke('spin');
+        })
+        .then(function() {
+          var pid = wh.pid();
+
+          var killStart = Date.now();
+          wh.kill(true)
+            .then(function() {
+              var killEnd = Date.now();
+              var killTime = (killEnd - killStart);
+
+              isProcessRunning(pid).should.be.false;
+              killTime.should.be.above(0);
+              killTime.should.be.below(cbGrace);
+              done();
+            })
+            .fail(done);
+
+          isProcessRunning(pid).should.be.true;
+          wh.state().should.equal(WorkerHandle.State.dying);
+        })
+        .fail(done);
+    });
   });
 
 });
