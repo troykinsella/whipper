@@ -15,6 +15,9 @@ var testWorkerInterface = testUtil.getTestWorkerInterface();
 var testEmitter;
 var wh;
 
+
+Q.longStackSupport = true;
+
 function isProcessRunning(pid) {
   try {
     process.kill(pid, 0);
@@ -397,6 +400,50 @@ describe('worker-handle', function() {
         })
         .fail(done);
     });
+  });
+
+  describe("#reset", function() {
+
+    it('should roll the child process', function(done) {
+      wh = createWH(1);
+      wh.fork()
+        .then(function() {
+          var pid = wh.pid();
+          pid.should.be.a.number;
+
+          wh.reset()
+            .then(function() {
+              var newPid = wh.pid();
+              newPid.should.be.a.number;
+              pid.should.not.equal(newPid);
+              done();
+            })
+            .fail(done);
+        })
+        .fail(done);
+    });
+
+    it('should flush pending and queued calls', function(done) {
+      wh = createWH(1);
+      wh.fork()
+        .then(function() {
+          wh.invoke('returnResult', 'foo');
+          wh.invoke('returnResult', 'bar');
+
+          wh.pendingCalls().should.equal(1);
+          wh.queuedCalls().should.equal(1);
+
+          wh.reset()
+            .then(function() {
+              wh.pendingCalls().should.equal(0);
+              wh.queuedCalls().should.equal(0);
+
+              done();
+            })
+            .fail(done);
+        }).fail(done);
+    });
+
   });
 
 });
