@@ -79,6 +79,30 @@ describe('worker-handle', function() {
     wh.isAvailable().should.be.false;
   });
 
+  it('should timeout after configured inactivity period', function(done) {
+
+    var to = 500;
+    var cbGrace = 50;
+    var timedOut = false;
+
+    testEmitter.on("worker:inactivity-timeout", function() {
+      timedOut = true;
+    });
+    testEmitter.on("worker:state:destroying", function() {
+      timedOut.should.be.true;
+
+      var elapsed = Date.now() - startTime;
+      elapsed.should.be.above(to);
+      elapsed.should.be.below(to + cbGrace);
+      done();
+    });
+
+    var startTime = Date.now();
+    wh = createWH(123, {
+      inactivityTimeout: to
+    });
+  });
+
   describe("#fork", function() {
 
     it('should create a child process', function(done) {
@@ -99,6 +123,25 @@ describe('worker-handle', function() {
       wh.state().should.equal(WorkerHandle.State.forking);
     });
 
+    it('should emit state changed events', function(done) {
+      wh = createWH(1);
+
+      var forking = false;
+      var processing = false;
+
+      testEmitter.on("worker:state:forking", function() {
+        forking = true;
+      });
+      testEmitter.on("worker:state:processing", function() {
+        processing = true;
+      });
+
+      wh.fork().then(function() {
+        forking.should.be.true;
+        processing.should.be.true;
+        done();
+      });
+    });
   });
 
   describe("#discoverInterface", function() {
@@ -256,12 +299,11 @@ describe('worker-handle', function() {
               wh.state().should.equal(WorkerHandle.State.processing);
               wh.pendingCalls().should.equal(0);
               wh.queuedCalls().should.equal(0);
+              done();
             })
             .fail(done);
 
           wh.state().should.equal(WorkerHandle.State.flushing);
-
-          done();
         }).fail(done);
     });
 
@@ -286,7 +328,6 @@ describe('worker-handle', function() {
           wh.state().should.equal(WorkerHandle.State.flushing);
         })
         .fail(done);
-
     });
 
     it('should resolve after queued calls complete', function(done) {
@@ -315,6 +356,33 @@ describe('worker-handle', function() {
 
     });
 
+    it('should emit state changed events', function(done) {
+      wh = createWH(1);
+
+      var flushing = false;
+      var processing = false;
+
+      testEmitter.on("worker:state:flushing", function() {
+        flushing = true;
+      });
+
+      wh.fork()
+        .then(function() {
+
+          testEmitter.on("worker:state:processing", function() {
+            flushing.should.be.true;
+            processing = true;
+          });
+
+          wh.flush()
+            .then(function() {
+              flushing.should.be.true;
+              processing.should.be.true;
+              done();
+            })
+            .fail(done);
+        }).fail(done);
+    });
   });
 
   describe("#kill", function() {
@@ -399,6 +467,46 @@ describe('worker-handle', function() {
           wh.state().should.equal(WorkerHandle.State.dying);
         })
         .fail(done);
+    });
+
+    it('should emit state changed when graceful', function(done) {
+
+      var dying = false;
+
+      wh = createWH(1);
+      wh.fork()
+        .then(function() {
+
+          testEmitter.on('worker:state:dying', function() {
+            dying = true;
+          });
+
+          wh.kill(true)
+            .then(function() {
+              dying.should.be.true;
+              done();
+            });
+        });
+    });
+
+    it('should emit state changed events when forced', function(done) {
+
+      var dying = false;
+
+      wh = createWH(1);
+      wh.fork()
+        .then(function() {
+
+          testEmitter.on('worker:state:dying', function() {
+            dying = true;
+          });
+
+          wh.kill(true)
+            .then(function() {
+              dying.should.be.true;
+              done();
+            });
+        });
     });
   });
 
