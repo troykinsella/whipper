@@ -41,7 +41,7 @@ function createWH(id, options) {
   options.maxConcurrentCallsPerWorker = options.maxConcurrentCallsPerWorker || 1;
 
   options.workerModulePath = testWorkerPath;
-  options.logger = console.log;
+  //options.logger = console.log;
 
   return new WorkerHandle(id, testEmitter, options);
 }
@@ -82,7 +82,7 @@ describe('worker-handle', function() {
   it('should timeout after configured inactivity period', function(done) {
 
     var to = 500;
-    var cbGrace = 50;
+    var cbGrace = 150;
     var timedOut = false;
 
     testEmitter.on("worker:inactivity-timeout", function() {
@@ -392,7 +392,8 @@ describe('worker-handle', function() {
       wh.fork()
         .then(function() {
           var pid = wh.pid();
-          wh.kill().then(function() {
+          wh.kill().then(function(worker) {
+            worker.should.equal(wh);
             isProcessRunning(pid).should.be.false;
             done();
           })
@@ -407,7 +408,7 @@ describe('worker-handle', function() {
     it('should force kill the existing process after forceKillTimeout', function(done) {
 
       var to = 500;
-      var cbGrace = 50;
+      var cbGrace = 150;
 
       wh = createWH(1, {
         forceKillTimeout: to
@@ -440,7 +441,7 @@ describe('worker-handle', function() {
     });
 
     it('should force kill the existing process', function(done) {
-      var cbGrace = 50;
+      var cbGrace = 150;
 
       wh = createWH(1);
       wh.fork()
