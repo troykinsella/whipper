@@ -30,7 +30,9 @@ describe('worker-pool', function() {
     pool = createPool();
     pool.workerCount().should.equal(0);
     pool.allWorkers().should.deep.equal([]);
+    pool.availableWorkerCount().should.equal(0);
     pool.availableWorkers().should.deep.equal([]);
+    pool.unavailableWorkerCount().should.equal(0);
     pool.unavailableWorkers().should.deep.equal([]);
   });
 
@@ -58,6 +60,35 @@ describe('worker-pool', function() {
 
         pool.workerCount().should.equal(2);
       }).fail(done);
+    });
+
+  });
+
+  describe('#allWorkers', function() {
+
+    it('should return all workers', function(done) {
+      pool = createPool();
+      pool.addWorker().then(function(worker1) {
+        pool.allWorkers().should.deep.equal([ worker1 ]);
+        pool.addWorker().then(function(worker2) {
+          pool.allWorkers().should.deep.equal([worker1, worker2]);
+          pool.addWorker().then(function (worker3) {
+            pool.allWorkers().should.deep.equal([worker1, worker2, worker3]);
+            done();
+          }).fail(done);
+        }).fail(done);
+      }).fail(done);
+    });
+
+  });
+
+  describe('#availableWorkers', function() {
+
+    it('should', function(done) {
+
+      pool = createPool();
+
+
     });
 
   });
@@ -361,6 +392,59 @@ describe('worker-pool', function() {
         done();
       }).fail(done);
     });
+  });
+
+  describe('event', function() {
+
+    describe('worker:pool:available', function() {
+
+      it('should emit when pool first available', function(done) {
+        pool = createPool();
+        testEmitter.on("worker:pool:available", function() {
+          done();
+        });
+        pool.addWorker();
+      });
+
+      it('should emit when pool returns to available', function(done) {
+        pool = createPool({
+          maxConcurrentCallsPerWorker: 1
+        });
+
+        var calls = 0;
+        testEmitter.on("worker:pool:available", function() {
+          if (++calls == 2) {
+            done();
+          }
+        });
+
+        pool.addWorker().then(function(worker) {
+          worker.invoke('returnResult');
+        });
+      });
+
+    });
+
+    describe('worker:pool:unavailable', function() {
+
+      it('should emit when pool first unavailable', function(done) {
+        pool = createPool();
+        var availableCalled = false;
+        testEmitter.on("worker:pool:available", function() {
+          availableCalled = true;
+        });
+        testEmitter.on("worker:pool:unavailable", function() {
+          availableCalled.should.be.true;
+          done();
+        });
+
+        pool.addWorker().then(function(worker) {
+          worker.invoke('returnResult');
+        });
+      });
+
+    });
+
   });
 
 });

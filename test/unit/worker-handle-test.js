@@ -15,6 +15,7 @@ var testWorkerInterface = testUtil.getTestWorkerInterface();
 var testEmitter;
 var wh;
 
+var cbGrace = 250;
 
 Q.longStackSupport = true;
 
@@ -82,9 +83,7 @@ describe('worker-handle', function() {
   it('should timeout after configured inactivity period', function(done) {
 
     var to = 500;
-    var cbGrace = 150;
     var timedOut = false;
-
     testEmitter.on("worker:inactivity-timeout", function() {
       timedOut = true;
     });
@@ -101,6 +100,8 @@ describe('worker-handle', function() {
     wh = createWH(123, {
       inactivityTimeout: to
     });
+
+    wh.fork();
   });
 
   describe("#fork", function() {
@@ -127,20 +128,15 @@ describe('worker-handle', function() {
       wh = createWH(1);
 
       var forking = false;
-      var processing = false;
-
       testEmitter.on("worker:state:forking", function() {
         forking = true;
       });
       testEmitter.on("worker:state:processing", function() {
-        processing = true;
+        forking.should.be.true;
+        done()
       });
 
-      wh.fork().then(function() {
-        forking.should.be.true;
-        processing.should.be.true;
-        done();
-      });
+      wh.fork().fail(done);
     });
   });
 
@@ -359,28 +355,15 @@ describe('worker-handle', function() {
     it('should emit state changed events', function(done) {
       wh = createWH(1);
 
-      var flushing = false;
-      var processing = false;
-
       testEmitter.on("worker:state:flushing", function() {
-        flushing = true;
+        testEmitter.on("worker:state:processing", function() {
+          done()
+        });
       });
 
       wh.fork()
         .then(function() {
-
-          testEmitter.on("worker:state:processing", function() {
-            flushing.should.be.true;
-            processing = true;
-          });
-
-          wh.flush()
-            .then(function() {
-              flushing.should.be.true;
-              processing.should.be.true;
-              done();
-            })
-            .fail(done);
+            wh.flush().fail(done);
         }).fail(done);
     });
   });
@@ -408,7 +391,6 @@ describe('worker-handle', function() {
     it('should force kill the existing process after forceKillTimeout', function(done) {
 
       var to = 500;
-      var cbGrace = 150;
 
       wh = createWH(1, {
         forceKillTimeout: to
@@ -441,8 +423,6 @@ describe('worker-handle', function() {
     });
 
     it('should force kill the existing process', function(done) {
-      var cbGrace = 150;
-
       wh = createWH(1);
       wh.fork()
         .then(function() {
