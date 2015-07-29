@@ -84,11 +84,45 @@ describe('worker-pool', function() {
 
   describe('#availableWorkers', function() {
 
-    it('should', function(done) {
-
+    it('should return available workers', function(done) {
       pool = createPool();
+      pool.addWorker().then(function(worker1) {
+        pool.availableWorkers().should.deep.equal([ worker1 ]);
+        pool.addWorker().then(function(worker2) {
+          pool.availableWorkers().should.deep.equal([ worker1, worker2 ]);
+          done();
+        });
+      });
+    });
 
+    it('should not return unavailable workers', function(done) {
+      pool = createPool({
+        maxConcurrentCallsPerWorker: 1
+      });
+      pool.addWorker().then(function(worker1) {
+        pool.addWorker().then(function(worker2) {
+          worker1.invoke('returnResult');
+          pool.availableWorkers().should.deep.equal([ worker2 ]);
+          done();
+        });
+      });
+    });
 
+  });
+
+  describe('#unavailableWorkers', function() {
+
+    it('should return unavailable workers', function(done) {
+      pool = createPool({
+        maxConcurrentCallsPerWorker: 1
+      });
+      pool.addWorker().then(function(worker1) {
+        pool.addWorker().then(function(worker2) {
+          worker1.invoke('returnResult');
+          pool.unavailableWorkers().should.deep.equal([ worker1 ]);
+          done();
+        });
+      });
     });
 
   });
@@ -428,7 +462,9 @@ describe('worker-pool', function() {
     describe('worker:pool:unavailable', function() {
 
       it('should emit when pool first unavailable', function(done) {
-        pool = createPool();
+        pool = createPool({
+          maxConcurrentCallsPerWorker: 1
+        });
         var availableCalled = false;
         testEmitter.on("worker:pool:available", function() {
           availableCalled = true;
@@ -440,6 +476,25 @@ describe('worker-pool', function() {
 
         pool.addWorker().then(function(worker) {
           worker.invoke('returnResult');
+        });
+      });
+
+      it('should emit when pool returns to unavailable', function(done) {
+        pool = createPool({
+          maxConcurrentCallsPerWorker: 1
+        });
+
+        var calls = 0;
+        testEmitter.on("worker:pool:unavailable", function() {
+          if (++calls == 2) {
+            done();
+          }
+        });
+
+        pool.addWorker().then(function(worker) {
+          worker.invoke('returnResult').then(function() {
+            worker.invoke('returnResult');
+          });
         });
       });
 
