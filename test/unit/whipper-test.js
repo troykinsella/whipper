@@ -1,8 +1,11 @@
 var assert = require('assert');
+var testUtil = require('../util');
 var Whipper = require('../../lib/whipper');
 
 var testWorkerPath = require.resolve('../fixtures/test-worker');
+var testWorkerInterface = testUtil.getTestWorkerInterface();
 
+var testEmitter;
 
 function isProcessRunning(pid) {
   try {
@@ -79,9 +82,15 @@ describe('whipper', function() {
     });*/
   });
 
-  describe('WorkerHandle', function() {
+  describe("#getWorkerInterface", function() {
 
+    it('should discover the worker interface', function(done) {
 
+      wm = createWM();
+      wm.getWorkerInterface().then(function(iface) {
+        iface.should.deep.equal(testWorkerInterface);
+      });
+    });
 
   });
 

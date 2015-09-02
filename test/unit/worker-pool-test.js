@@ -29,11 +29,11 @@ describe('worker-pool', function() {
   it('should have a predictable initial state', function() {
     pool = createPool();
     pool.workerCount().should.equal(0);
-    pool.allWorkers().should.deep.equal([]);
+    pool.allWorkers().values().should.deep.equal([]);
     pool.availableWorkerCount().should.equal(0);
-    pool.availableWorkers().should.deep.equal([]);
+    pool.availableWorkers().values().should.deep.equal([]);
     pool.unavailableWorkerCount().should.equal(0);
-    pool.unavailableWorkers().should.deep.equal([]);
+    pool.unavailableWorkers().values().should.deep.equal([]);
   });
 
   describe('#addWorker', function() {
@@ -69,11 +69,11 @@ describe('worker-pool', function() {
     it('should return all workers', function(done) {
       pool = createPool();
       pool.addWorker().then(function(worker1) {
-        pool.allWorkers().should.deep.equal([ worker1 ]);
+        pool.allWorkers().values().should.deep.equal([ worker1 ]);
         pool.addWorker().then(function(worker2) {
-          pool.allWorkers().should.deep.equal([worker1, worker2]);
+          pool.allWorkers().values().should.deep.equal([worker1, worker2]);
           pool.addWorker().then(function (worker3) {
-            pool.allWorkers().should.deep.equal([worker1, worker2, worker3]);
+            pool.allWorkers().values().should.deep.equal([worker1, worker2, worker3]);
             done();
           }).fail(done);
         }).fail(done);
@@ -87,9 +87,9 @@ describe('worker-pool', function() {
     it('should return available workers', function(done) {
       pool = createPool();
       pool.addWorker().then(function(worker1) {
-        pool.availableWorkers().should.deep.equal([ worker1 ]);
+        pool.availableWorkers().values().should.deep.equal([ worker1 ]);
         pool.addWorker().then(function(worker2) {
-          pool.availableWorkers().should.deep.equal([ worker1, worker2 ]);
+          pool.availableWorkers().values().should.deep.equal([ worker1, worker2 ]);
           done();
         });
       });
@@ -102,7 +102,7 @@ describe('worker-pool', function() {
       pool.addWorker().then(function(worker1) {
         pool.addWorker().then(function(worker2) {
           worker1.invoke('returnResult');
-          pool.availableWorkers().should.deep.equal([ worker2 ]);
+          pool.availableWorkers().values().should.deep.equal([ worker2 ]);
           done();
         });
       });
@@ -119,7 +119,7 @@ describe('worker-pool', function() {
       pool.addWorker().then(function(worker1) {
         pool.addWorker().then(function(worker2) {
           worker1.invoke('returnResult');
-          pool.unavailableWorkers().should.deep.equal([ worker1 ]);
+          pool.unavailableWorkers().values().should.deep.equal([ worker1 ]);
           done();
         });
       });
@@ -288,7 +288,7 @@ describe('worker-pool', function() {
     it('should remove a specific worker', function(done) {
       pool = createPool();
       pool.ensureMinimumWorkers(3).then(function() {
-        var aWorker = pool.allWorkers()[1];
+        var aWorker = pool.allWorkers().values()[1];
         pool.removeWorker(aWorker).then(function(workerRemoved) {
           workerRemoved.should.equal(aWorker);
           done();
