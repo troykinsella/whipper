@@ -14,7 +14,8 @@ describe('pipe', function() {
   it('should have a predictable initial state', function() {
     var p = createPipe();
 
-    p.atCapacity().should.be.false;
+    p.isIdle().should.be.true;
+    p.atMaxPending().should.be.false;
     p.pending().should.equal(0);
     p.queued().should.equal(0);
     p.flushing().should.be.false;
