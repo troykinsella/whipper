@@ -54,8 +54,8 @@ describe('worker-handle', function() {
 
   beforeEach(function() {
     testEmitter = new EventEmitter();
-    testEmitter.once("worker:pid:created", function(pid) {
-      pids.push(pid);
+    testEmitter.once("worker:process:created", function(worker) {
+      pids.push(worker.pid());
     });
   });
 
@@ -101,25 +101,26 @@ describe('worker-handle', function() {
       inactivityTimeout: to
     });
 
-    wh.fork();
+    wh.fork()
+      .fail(done);
   });
 
   describe("#fork", function() {
 
     it('should create a child process', function(done) {
       wh = createWH(1);
-      wh.fork().then(function() {
+      wh.fork()
+        .then(function() {
+          wh.pid().should.be.above(0);
+          isProcessRunning(wh.pid()).should.be.true;
+          wh.state().should.equal(WorkerHandle.State.processing);
+          wh.isAvailable().should.be.true;
 
-        wh.pid().should.be.above(0);
-        isProcessRunning(wh.pid()).should.be.true;
-        wh.state().should.equal(WorkerHandle.State.processing);
-        wh.isAvailable().should.be.true;
-
-        wh.pendingCalls().should.equal(0);
-        wh.queuedCalls().should.equal(0);
-
-        done();
-      }).fail(done);
+          wh.pendingCalls().should.equal(0);
+          wh.queuedCalls().should.equal(0);
+          done();
+        })
+        .fail(done);
 
       wh.state().should.equal(WorkerHandle.State.forking);
     });
@@ -136,7 +137,8 @@ describe('worker-handle', function() {
         done()
       });
 
-      wh.fork().fail(done);
+      wh.fork()
+        .fail(done);
     });
   });
 
@@ -151,7 +153,8 @@ describe('worker-handle', function() {
         .then(function(reply) {
           reply.iface.should.deep.equal(testWorkerInterface);
           done();
-        }).fail(done);
+        })
+        .fail(done);
     });
   });
 
@@ -169,7 +172,8 @@ describe('worker-handle', function() {
         .then(function(reply) {
           reply.should.equal('received: foo');
           done();
-        }).fail(done);
+        })
+        .fail(done);
     }
 
     function expectError(method, args, expectedType, expectedMessage, done) {
@@ -213,7 +217,8 @@ describe('worker-handle', function() {
         .then(function(reply) {
           reply.should.deep.equal([ 'foo', 'bar' ]);
           done();
-        }).fail(done);
+        })
+        .fail(done);
     });
 
     it('should succeed calling a worker method that returns three results', function(done) {
@@ -225,7 +230,8 @@ describe('worker-handle', function() {
         .then(function(reply) {
           reply.should.deep.equal([ 'foo', 'bar', 'baz' ]);
           done();
-        }).fail(done);
+        })
+        .fail(done);
     });
 
     it('should succeed calling a worker method that calls back a result now', function(done) {
@@ -279,6 +285,56 @@ describe('worker-handle', function() {
       expectError('waitFor', [ 700 ], InvocationTimeoutError, undefined, done);
     });
 
+    it('should reset when maxTotalCallsPerWorker exceeded', function(done) {
+      wh = createWH(1, {
+        maxTotalCallsPerWorker: 2
+      });
+
+      wh.fork()
+        .then(function() {
+          var pid = wh.pid();
+          var reply1 = false;
+          var reply2 = false;
+          var reply3 = false;
+          var exited = false;
+
+          testEmitter.on("worker:process:exited", function() {
+            reply1.should.be.true;
+            reply2.should.be.true;
+            reply3.should.be.true;
+            exited = true;
+          });
+
+          testEmitter.on("worker:process:created", function() {
+            exited.should.be.true;
+            pid.should.not.equal(wh.pid());
+            done();
+          });
+
+          wh.invoke('returnResult', 1)
+            .then(function() {
+              reply1 = true;
+              pid.should.equal(wh.pid());
+            })
+            .fail(done);
+          wh.invoke('returnResult', 2)
+            .then(function() {
+              reply2 = true;
+              pid.should.equal(wh.pid());
+            })
+            .fail(done);
+          wh.invoke('returnResult', 3)
+            .then(function() {
+              reply3 = true;
+              reply1.should.be.true;
+              reply2.should.be.true;
+              pid.should.equal(wh.pid());
+            })
+            .fail(done);
+        })
+        .fail(done);
+    });
+
   });
 
   describe('#flush', function() {
@@ -300,7 +356,8 @@ describe('worker-handle', function() {
             .fail(done);
 
           wh.state().should.equal(WorkerHandle.State.flushing);
-        }).fail(done);
+        })
+        .fail(done);
     });
 
     it('should resolve after pending calls complete', function(done) {
@@ -363,8 +420,10 @@ describe('worker-handle', function() {
 
       wh.fork()
         .then(function() {
-            wh.flush().fail(done);
-        }).fail(done);
+            wh.flush()
+              .fail(done);
+        })
+        .fail(done);
     });
   });
 
@@ -466,8 +525,10 @@ describe('worker-handle', function() {
             .then(function() {
               dying.should.be.true;
               done();
-            });
-        });
+            })
+            .fail(done);
+        })
+        .fail(done);
     });
 
     it('should emit state changed events when forced', function(done) {
@@ -486,8 +547,10 @@ describe('worker-handle', function() {
             .then(function() {
               dying.should.be.true;
               done();
-            });
-        });
+            })
+            .fail(done);
+        })
+        .fail(done);
     });
   });
 
@@ -530,7 +593,35 @@ describe('worker-handle', function() {
               done();
             })
             .fail(done);
-        }).fail(done);
+        })
+        .fail(done);
+    });
+
+  });
+
+  describe("#resetNeeded", function() {
+
+    it('should return false after initialization', function() {
+      wh = createWH(1);
+      wh.resetNeeded().should.be.false;
+    });
+
+    it('should return true after maxTotalCallsPerWorker exceeded', function(done) {
+      wh = createWH(1, {
+        maxTotalCallsPerWorker: 2
+      });
+
+      wh.fork()
+        .then(function() {
+          wh.invoke('returnValue');
+          wh.resetNeeded().should.be.false;
+          wh.invoke('returnValue');
+          wh.resetNeeded().should.be.true;
+          wh.invoke('returnValue');
+          wh.resetNeeded().should.be.true;
+          done();
+        })
+        .fail(done);
     });
 
   });
