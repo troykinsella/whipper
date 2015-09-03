@@ -1,15 +1,19 @@
+var Q = require('q');
 var EventEmitter = require('events').EventEmitter;
 var assert = require('assert');
 
 var chai = require('chai');
+var expect = chai.expect;
 var should = chai.should();
 
 var WorkerHandle = require('../../lib/worker-handle');
 var WorkerPool = require('../../lib/worker-pool');
 
 var testWorkerPath = require.resolve('../fixtures/test-worker');
-var pool;
 
+Q.longStackSupport = true;
+
+var pool;
 var testEmitter;
 
 function createPool(options) {
@@ -30,10 +34,12 @@ describe('worker-pool', function() {
     pool = createPool();
     pool.workerCount().should.equal(0);
     pool.allWorkers().values().should.deep.equal([]);
+    pool.idleWorkers().values().should.deep.equal([]);
+    expect(pool.idleWorker()).to.equal(null);
+    pool.busyWorkers().values().should.deep.equal([]);
+    expect(pool.busyWorker()).to.equal(null);
+    pool.atCapacityWorkers().values().should.deep.equal([]);
     pool.availableWorkerCount().should.equal(0);
-    pool.availableWorkers().values().should.deep.equal([]);
-    pool.unavailableWorkerCount().should.equal(0);
-    pool.unavailableWorkers().values().should.deep.equal([]);
   });
 
   describe('#addWorker', function() {
@@ -82,27 +88,27 @@ describe('worker-pool', function() {
 
   });
 
-  describe('#availableWorkers', function() {
+  describe('#idleWorkers', function() {
 
-    it('should return available workers', function(done) {
+    it('should return idle workers', function(done) {
       pool = createPool();
       pool.addWorker().then(function(worker1) {
-        pool.availableWorkers().values().should.deep.equal([ worker1 ]);
+        pool.idleWorkers().values().should.deep.equal([ worker1 ]);
         pool.addWorker().then(function(worker2) {
-          pool.availableWorkers().values().should.deep.equal([ worker1, worker2 ]);
+          pool.idleWorkers().values().should.deep.equal([ worker1, worker2 ]);
           done();
         });
       });
     });
 
-    it('should not return unavailable workers', function(done) {
+    it('should not return non-idle workers', function(done) {
       pool = createPool({
         maxConcurrentCallsPerWorker: 1
       });
       pool.addWorker().then(function(worker1) {
         pool.addWorker().then(function(worker2) {
           worker1.invoke('returnResult');
-          pool.availableWorkers().values().should.deep.equal([ worker2 ]);
+          pool.idleWorkers().values().should.deep.equal([ worker2 ]);
           done();
         });
       });
@@ -110,16 +116,78 @@ describe('worker-pool', function() {
 
   });
 
-  describe('#unavailableWorkers', function() {
+  describe('#idleWorker', function() {
 
-    it('should return unavailable workers', function(done) {
+    it('should return idle worker', function(done) {
+      pool = createPool();
+      pool.addWorker().then(function(worker1) {
+        pool.idleWorker().should.equal(worker1);
+        pool.addWorker().then(function(worker2) {
+          pool.idleWorker().should.equal(worker1);
+          done();
+        });
+      });
+    });
+
+    it('should not return non-idle worker', function(done) {
       pool = createPool({
         maxConcurrentCallsPerWorker: 1
       });
       pool.addWorker().then(function(worker1) {
         pool.addWorker().then(function(worker2) {
           worker1.invoke('returnResult');
-          pool.unavailableWorkers().values().should.deep.equal([ worker1 ]);
+          pool.idleWorker().should.equal(worker2);
+          done();
+        });
+      });
+    });
+
+  });
+
+  describe('#busyWorkers', function() {
+
+    it('should return busy workers', function(done) {
+      pool = createPool({
+        maxConcurrentCallsPerWorker: 2
+      });
+      pool.addWorker().then(function(worker1) {
+        pool.addWorker().then(function(worker2) {
+          worker1.invoke('returnResult');
+          pool.busyWorkers().values().should.deep.equal([ worker1 ]);
+          done();
+        });
+      });
+    });
+
+  });
+
+  describe('#busyWorker', function() {
+
+    it('should return busy worker', function(done) {
+      pool = createPool({
+        maxConcurrentCallsPerWorker: 2
+      });
+      pool.addWorker().then(function(worker1) {
+        pool.addWorker().then(function(worker2) {
+          worker1.invoke('returnResult');
+          pool.busyWorker().should.equal(worker1);
+          done();
+        });
+      });
+    });
+
+  });
+
+  describe('#atCapacityWorkers', function() {
+
+    it('should return at-capacity worker', function(done) {
+      pool = createPool({
+        maxConcurrentCallsPerWorker: 1
+      });
+      pool.addWorker().then(function(worker1) {
+        pool.addWorker().then(function(worker2) {
+          worker1.invoke('returnResult');
+          pool.atCapacityWorkers().values().should.deep.equal([ worker1 ]);
           done();
         });
       });

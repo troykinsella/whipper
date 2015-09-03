@@ -7,7 +7,7 @@ var should = chai.should();
 var expect = chai.expect;
 
 var WorkerHandle = require('../../lib/worker-handle');
-var InvocationTimeoutError = require('../../lib/error/invocation-timeout-error');
+var TimeoutError = require('../../lib/error/timeout-error');
 var testUtil = require('../util');
 var testWorkerPath = require.resolve('../fixtures/test-worker');
 
@@ -71,13 +71,10 @@ describe('worker-handle', function() {
     wh.id().should.equal(123);
     expect(wh.pid()).to.be.null;
     wh.state().should.equal(WorkerHandle.State.created);
+    wh.workingStatus().should.equal(WorkerHandle.WorkingStatus.idle);
     expect(wh.exitCode()).to.be.null;
-
-    wh.isIdle().should.be.true;
     wh.pendingCalls().should.equal(0);
     wh.queuedCalls().should.equal(0);
-    wh.atCapacity().should.be.false;
-    wh.isAvailable().should.be.false;
   });
 
   it('should timeout after configured inactivity period', function(done) {
@@ -114,7 +111,7 @@ describe('worker-handle', function() {
           wh.pid().should.be.above(0);
           isProcessRunning(wh.pid()).should.be.true;
           wh.state().should.equal(WorkerHandle.State.processing);
-          wh.isAvailable().should.be.true;
+          wh.workingStatus().should.equal(WorkerHandle.WorkingStatus.idle);
 
           wh.pendingCalls().should.equal(0);
           wh.queuedCalls().should.equal(0);
@@ -282,7 +279,7 @@ describe('worker-handle', function() {
       wh = createWH(1, {
         invocationTimeout: 500
       });
-      expectError('waitFor', [ 700 ], InvocationTimeoutError, undefined, done);
+      expectError('waitFor', [ 700 ], TimeoutError, undefined, done);
     });
 
     it('should reset when maxTotalCallsPerWorker exceeded', function(done) {

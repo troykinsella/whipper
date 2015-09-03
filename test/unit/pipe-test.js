@@ -1,6 +1,10 @@
+var Q = require('q');
 var assert = require('assert');
 var should = require('chai').should();
 var Pipe = require('../../lib/pipe');
+var TimeoutError = require('../../lib/error/timeout-error');
+
+Q.longStackSupport = true;
 
 function createPipe(options) {
   options = options || {};
@@ -100,7 +104,51 @@ describe('pipe', function() {
     });
 
     it('should be rejected when flushing', function() {
-      // TODO: should this be a thing?
+      var p = createPipe();
+      var receiver = p.receiver();
+
+      p.sender(function(data) {
+        // Echo back to the receiver later
+        setTimeout(function() {
+          receiver({
+            id: data.id,
+            message: data.message
+          })
+        }, 0);
+      });
+
+      p.send({ foo: 'bar' });
+      p.flush();
+      p.send({ bar: 'baz' }).then(function(reply) {
+        assert.fail("Send during flush succeeded");
+      }).fail(function(err) {
+        assert(err instanceof Error);
+        done();
+      });
+    });
+
+    it('should be rejected when message timed out', function() {
+      var p = createPipe({
+        pendingTimeout: 500
+      });
+      var receiver = p.receiver();
+
+      p.sender(function(data) {
+        // Echo back to the receiver later
+        setTimeout(function() {
+          receiver({
+            id: data.id,
+            message: data.message
+          })
+        }, 700);
+      });
+
+      p.send({ bar: 'baz' }).then(function(reply) {
+        assert.fail("Send succeeded");
+      }).fail(function(err) {
+        assert(err instanceof TimeoutError);
+        done();
+      });
     });
 
   });
