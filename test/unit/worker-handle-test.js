@@ -1,21 +1,22 @@
-var EventEmitter = require('events').EventEmitter;
-var assert = require('assert');
+const EventEmitter = require('events').EventEmitter;
+const assert = require('assert');
 
-var Q = require('q');
-var chai = require('chai');
-var should = chai.should();
-var expect = chai.expect;
+const Q = require('q');
+const chai = require('chai');
+const should = chai.should();
+const expect = chai.expect;
 
-var WorkerHandle = require('../../lib/worker-handle');
-var TimeoutError = require('../../lib/error/timeout-error');
-var testUtil = require('../util');
-var testWorkerPath = require.resolve('../fixtures/test-worker');
+const WorkerHandle = require('../../lib/worker-handle');
+const TimeoutError = require('../../lib/error/timeout-error');
+const testUtil = require('../util');
+const testWorkerPath = require.resolve('../fixtures/test-worker');
 
-var testWorkerInterface = testUtil.getTestWorkerInterface();
+const testWorkerInterface = testUtil.getTestWorkerInterface();
+
 var testEmitter;
 var wh;
 
-var cbGrace = 250;
+const cbGrace = 250;
 
 Q.longStackSupport = true;
 
@@ -39,7 +40,7 @@ function forceKill(pid) {
 
 function createWH(id, options) {
   options = options || {};
-  options.maxConcurrentCallsPerWorker = options.maxConcurrentCallsPerWorker || 1;
+  options.maxConcurrentCalls = options.maxConcurrentCalls || 1;
 
   options.workerModulePath = testWorkerPath;
   //options.logger = console.log;
@@ -167,7 +168,7 @@ describe('worker-handle', function() {
           return wh.invoke(method, 'foo');
         })
         .then(function(reply) {
-          reply.should.equal('received: foo');
+          reply.should.equal('foo');
           done();
         })
         .fail(done);
@@ -282,9 +283,9 @@ describe('worker-handle', function() {
       expectError('waitFor', [ 700 ], TimeoutError, undefined, done);
     });
 
-    it('should reset when maxTotalCallsPerWorker exceeded', function(done) {
+    it('should reset when maxTotalCalls exceeded', function(done) {
       wh = createWH(1, {
-        maxTotalCallsPerWorker: 2
+        maxTotalCalls: 2
       });
 
       wh.fork()
@@ -605,7 +606,7 @@ describe('worker-handle', function() {
 
     it('should return true after maxTotalCallsPerWorker exceeded', function(done) {
       wh = createWH(1, {
-        maxTotalCallsPerWorker: 2
+        maxTotalCalls: 2
       });
 
       wh.fork()

@@ -1,8 +1,8 @@
-var Q = require('q');
-var assert = require('assert');
-var should = require('chai').should();
-var Pipe = require('../../lib/pipe');
-var TimeoutError = require('../../lib/error/timeout-error');
+const Q = require('q');
+const assert = require('assert');
+const should = require('chai').should();
+const Pipe = require('../../lib/pipe');
+const TimeoutError = require('../../lib/error/timeout-error');
 
 Q.longStackSupport = true;
 

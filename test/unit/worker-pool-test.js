@@ -1,15 +1,15 @@
-var Q = require('q');
-var EventEmitter = require('events').EventEmitter;
-var assert = require('assert');
+const Q = require('q');
+const EventEmitter = require('events').EventEmitter;
+const assert = require('assert');
 
-var chai = require('chai');
-var expect = chai.expect;
-var should = chai.should();
+const chai = require('chai');
+const expect = chai.expect;
+const should = chai.should();
 
-var WorkerHandle = require('../../lib/worker-handle');
-var WorkerPool = require('../../lib/worker-pool');
+const WorkerHandle = require('../../lib/worker-handle');
+const WorkerPool = require('../../lib/worker-pool');
 
-var testWorkerPath = require.resolve('../fixtures/test-worker');
+const testWorkerPath = require.resolve('../fixtures/test-worker');
 
 Q.longStackSupport = true;
 
@@ -103,7 +103,7 @@ describe('worker-pool', function() {
 
     it('should not return non-idle workers', function(done) {
       pool = createPool({
-        maxConcurrentCallsPerWorker: 1
+        maxConcurrentCalls: 1
       });
       pool.addWorker().then(function(worker1) {
         pool.addWorker().then(function(worker2) {
@@ -131,7 +131,7 @@ describe('worker-pool', function() {
 
     it('should not return non-idle worker', function(done) {
       pool = createPool({
-        maxConcurrentCallsPerWorker: 1
+        maxConcurrentCalls: 1
       });
       pool.addWorker().then(function(worker1) {
         pool.addWorker().then(function(worker2) {
@@ -148,7 +148,7 @@ describe('worker-pool', function() {
 
     it('should return busy workers', function(done) {
       pool = createPool({
-        maxConcurrentCallsPerWorker: 2
+        maxConcurrentCalls: 2
       });
       pool.addWorker().then(function(worker1) {
         pool.addWorker().then(function(worker2) {
@@ -165,7 +165,7 @@ describe('worker-pool', function() {
 
     it('should return busy worker', function(done) {
       pool = createPool({
-        maxConcurrentCallsPerWorker: 2
+        maxConcurrentCalls: 2
       });
       pool.addWorker().then(function(worker1) {
         pool.addWorker().then(function(worker2) {
@@ -182,7 +182,7 @@ describe('worker-pool', function() {
 
     it('should return at-capacity worker', function(done) {
       pool = createPool({
-        maxConcurrentCallsPerWorker: 1
+        maxConcurrentCalls: 1
       });
       pool.addWorker().then(function(worker1) {
         pool.addWorker().then(function(worker2) {
@@ -510,7 +510,7 @@ describe('worker-pool', function() {
 
       it('should emit when pool returns to available', function(done) {
         pool = createPool({
-          maxConcurrentCallsPerWorker: 1
+          maxConcurrentCalls: 1
         });
 
         var calls = 0;
@@ -531,7 +531,7 @@ describe('worker-pool', function() {
 
       it('should emit when pool first unavailable', function(done) {
         pool = createPool({
-          maxConcurrentCallsPerWorker: 1
+          maxConcurrentCalls: 1
         });
         var availableCalled = false;
         testEmitter.on("worker:pool:available", function() {
@@ -549,7 +549,7 @@ describe('worker-pool', function() {
 
       it('should emit when pool returns to unavailable', function(done) {
         pool = createPool({
-          maxConcurrentCallsPerWorker: 1
+          maxConcurrentCalls: 1
         });
 
         var calls = 0;

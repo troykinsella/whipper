@@ -4,6 +4,7 @@ var gulp = require('gulp');
 var mocha = require('gulp-mocha');
 var jshint = require('gulp-jshint');
 var jscs = require('gulp-jscs');
+var jsdoc = require("gulp-jsdoc");
 var istanbul = require('gulp-istanbul');
 var plumber = require('gulp-plumber');
 
@@ -12,7 +13,12 @@ var handleErr = function (err) {
   process.exit(1);
 };
 
-gulp.task('static', function () {
+gulp.task('docs', function() {
+  return gulp.src("./lib/**/*.js")
+    .pipe(jsdoc('./docs'));
+});
+
+gulp.task('static', function() {
   return gulp.src([
       '**/*.js',
       '!node_modules/**'
@@ -24,13 +30,13 @@ gulp.task('static', function () {
     .on('error', handleErr);
 });
 
-gulp.task('pre-test', function () {
+gulp.task('pre-test', function() {
   return gulp.src('lib/**/*.js')
     .pipe(istanbul({includeUntested: true}))
     .pipe(istanbul.hookRequire());
 });
 
-gulp.task('test', ['pre-test'], function (cb) {
+gulp.task('test', ['pre-test'], function(cb) {
   var mochaErr;
 
   gulp.src('test/**/*.js')

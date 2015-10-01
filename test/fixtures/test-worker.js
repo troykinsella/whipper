@@ -2,7 +2,7 @@ var Q = require('q');
 
 module.exports = {
   returnResult: function(arg) {
-    return "received: " + arg;
+    return arg;
   },
   returnTwoResults: function(arg1, arg2) {
     return [ arg1, arg2 ];
@@ -11,22 +11,22 @@ module.exports = {
     return [ arg1, arg2, arg3 ];
   },
   callbackResultNow: function(arg, callback) {
-    callback(null, "received: " + arg);
+    callback(null, arg);
   },
   callbackResultLater: function(arg, callback) {
     setTimeout(function() {
-      callback(null, "received: " + arg);
+      callback(null, arg);
     }, 0);
   },
   promiseResultNow: function(arg) {
     var def = Q.defer();
-    def.resolve("received: " + arg);
+    def.resolve(arg);
     return def.promise;
   },
   promiseResultLater: function(arg) {
     var def = Q.defer();
     setTimeout(function() {
-      def.resolve("received: " + arg);
+      def.resolve(arg);
     }, 0);
     return def.promise;
   },
@@ -68,5 +68,6 @@ module.exports = {
     };
     callback();
     spin();
-  }
+  },
+  drop: function() {}
 };

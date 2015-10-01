@@ -1,142 +1,128 @@
-var assert = require('assert');
-var testUtil = require('../util');
-var Whipper = require('../../lib/whipper');
+const Q = require('q');
+const assert = require('assert');
+const testUtil = require('../util');
+const Whipper = require('../../lib/whipper');
+const WorkerProxy = require('../../lib/worker-proxy');
 
-var testWorkerPath = require.resolve('../fixtures/test-worker');
-var testWorkerInterface = testUtil.getTestWorkerInterface();
+const testWorkerPath = require.resolve('../fixtures/test-worker');
 
-var testEmitter;
+Q.longStackSupport = true;
 
-function isProcessRunning(pid) {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
+var whipper;
 
 function createWhipper(options) {
   options = options || {};
   options.workerModulePath = testWorkerPath;
-  options.logger = console.log;
+  //options.logger = console.log;
 
-  var whipper = new Whipper(options);
-  return whipper;
+  whipper = new Whipper(options);
 }
 
 describe('whipper', function() {
 
-  it('should immediately initialize workers', function(done) {
+  afterEach(function(done) {
+    whipper.shutdown().then(function() {
+      done();
+    }).fail(done);
+  });
+
+  /*it('should immediately initialize workers', function(done) {
     var expectedCount = 1;
     var count = 0;
 
-    var whipper = createWhipper({
+    createWhipper({
       minWorkers: expectedCount,
       maxWorkers: expectedCount
     });
 
     whipper.on("worker:state:processing", function(worker) {
+      console.log("PROCESSING");
       count++;
-      assert(isProcessRunning(worker.pid()));
+//      assert(isProcessRunning(worker.pid()));
     });
 
-    whipper.on("workers:ready", function() {
-      assert.equal(expectedCount, count);
+    whipper.on("worker:state:changed", function(worker) {
+      console.log("STATE CHANGED: ", worker);
+    });
+
+    whipper.on("worker:pool:available", function() {
+      console.log("AVAILABLE");
+//      assert.equal(expectedCount, count);
       done();
     });
-  });
+  });*/
 
   describe("#invoke", function() {
 
     it('should invoke a worker method', function(done) {
-      var whipper = createWhipper({
+      createWhipper({
         maxWorkers: 1
       });
 
-      whipper.invoke('hello', 'hi', function(reply) {
-        assert.equal("received: hi", reply);
-        done();
-      });
+      whipper
+        .invoke('returnResult', 'hi')
+        .then(function(reply) {
+          assert.equal('hi', reply);
+          done();
+        })
+        .fail(done);
     });
-
-    /*it('should handle a returned error', function(done) {
-      var whipper = createWhipper({
-        maxWorkers: 1
-      });
-
-      whipper.invoke('returnError', [], function(err) {
-        assert(err instanceof Error);
-        done();
-      });
-    });*/
-
-    /*it('should handle a thrown error', function(done) {
-      var whipper = createWhipper({
-        maxWorkers: 1
-      });
-
-      whipper.invoke('throwError', [], function(err) {
-        // TODO: don't expect a response
-      });
-    });*/
-  });
-
-  describe("#getWorkerInterface", function() {
-
-    it('should discover the worker interface', function(done) {
-
-      wm = createWM();
-      wm.getWorkerInterface().then(function(iface) {
-        iface.should.deep.equal(testWorkerInterface);
-      });
-    });
-
   });
 
   describe('WorkerProxy', function() {
 
-    it('should reflect the worker interface', function(done) {
-      var whipper = createWhipper({
+    it('should resolve a proxy instance', function(done) {
+      createWhipper({
         maxWorkers: 1
       });
 
-      whipper.workerProxy().then(function(worker) {
+      whipper.workerProxy().then(function(proxy) {
+        assert(proxy instanceof WorkerProxy);
+        done();
+      }).fail(done);
+    });
+
+    it('should reflect the worker interface', function(done) {
+      createWhipper({
+        maxWorkers: 1
+      });
+
+      whipper.workerProxy().then(function(proxy) {
         var iface = [];
 
-        Object.keys(worker).forEach(function(name) {
-          var val = worker[name];
+        Object.keys(proxy).forEach(function(name) {
+          var val = proxy[name];
           if (typeof val === 'function') {
             iface.push(name);
           }
         });
 
-        assert.deepEqual([ 'hello', 'returnError', 'throwError', 'waitFor' ], iface);
+        assert.deepEqual(testUtil.getTestWorkerInterface(), iface);
         done();
-      });
+      }).fail(done);
     });
 
     it('should proxy calls to a worker with callback', function() {
-      var whipper = createWhipper({
+      createWhipper({
         maxWorkers: 1
       });
 
       whipper.workerProxy().then(function(worker) {
         worker.hello('hi', function(reply) {
-          assert.equal("received: hi", reply);
+          assert.equal('hi', reply);
           done();
         });
       });
     });
 
     it('should proxy calls to a worker with promise', function() {
-      var whipper = createWhipper({
+      createWhipper({
         maxWorkers: 1
       });
 
       whipper.workerProxy().then(function(worker) {
         worker.hello('hi').then(function(reply) {
-          assert.equal("received: hi", reply);
+          assert.equal('hi', reply);
           done();
         });
       });

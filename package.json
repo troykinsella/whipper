@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "A child process management library for node.js",
   "homepage": "https://bitbucket.org/troykinsella/whipper",
+  "repository": "https://bitbucket.org/troykinsella/whipper",
   "author": {
     "name": "Troy Kinsella"
   },
@@ -22,6 +23,7 @@
     "gulp-eslint": "^0.8.0",
     "gulp-istanbul": "^0.8.1",
     "gulp-jscs": "^1.1.0",
+    "gulp-jsdoc": "^0.1.4",
     "gulp-jshint": "^1.5.3",
     "gulp-mocha": "^2.0.0",
     "gulp-plumber": "^1.0.0",
