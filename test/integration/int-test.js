@@ -1,3 +1,6 @@
+/*jshint -W030 */
+"use strict";
+
 const Q = require('q');
 const Whipper = require('../..');
 const assert = require('assert');
@@ -36,16 +39,17 @@ function expectReplies(whipperOpts, calls, done) {
     remainingReplies[i] = true;
   }
 
+  function handleReply(reply) {
+    ensureWorkerConstraints(whipperOpts);
+
+    delete remainingReplies[reply];
+    if (Object.keys(remainingReplies).length === 0) {
+      done();
+    }
+  }
+
   for (i = 0; i < calls; i++) {
-    whipper.invoke('returnResult', [ i ]).then(function(reply) {
-
-      ensureWorkerConstraints(whipperOpts);
-
-      delete remainingReplies[reply];
-      if (Object.keys(remainingReplies).length === 0) {
-        done();
-      }
-    }).fail(done);
+    whipper.invoke('returnResult', [ i ]).then(handleReply).fail(done);
   }
 }
 
@@ -127,7 +131,8 @@ describe('whipper integration', function() {
 
   });
 
-  describe("load", function() {
+  // TODO: This load test doesn't belong here.
+  /*describe("load", function() {
 
     this.timeout(20000);
 
@@ -169,6 +174,6 @@ describe('whipper integration', function() {
       doNextBatch();
     });
 
-  });
+  });*/
 
 });

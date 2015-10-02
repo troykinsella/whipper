@@ -1,9 +1,10 @@
+/*jshint -W030 */
+"use strict";
+
 const EventEmitter = require('events').EventEmitter;
-const assert = require('assert');
 
 const Q = require('q');
 const chai = require('chai');
-const should = chai.should();
 const expect = chai.expect;
 
 const WorkerHandle = require('../../lib/worker-handle');
@@ -23,15 +24,6 @@ Q.longStackSupport = true;
 function isProcessRunning(pid) {
   try {
     process.kill(pid, 0);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-function forceKill(pid) {
-  try {
-    process.kill(pid);
     return true;
   } catch (e) {
     return false;
@@ -62,7 +54,7 @@ describe('worker-handle', function() {
 
   afterEach(function() {
     pids.forEach(function(pid) {
-      forceKill(pid);
+      testUtil.forceKill(pid);
     });
     wh = null;
   });
@@ -132,7 +124,7 @@ describe('worker-handle', function() {
       });
       testEmitter.on("worker:state:processing", function() {
         forking.should.be.true;
-        done()
+        done();
       });
 
       wh.fork()
@@ -412,7 +404,7 @@ describe('worker-handle', function() {
 
       testEmitter.on("worker:state:flushing", function() {
         testEmitter.on("worker:state:processing", function() {
-          done()
+          done();
         });
       });
 

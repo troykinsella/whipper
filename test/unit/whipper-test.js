@@ -1,3 +1,6 @@
+/*jshint -W030 */
+"use strict";
+
 const Q = require('q');
 const assert = require('assert');
 const testUtil = require('../util');
@@ -102,26 +105,26 @@ describe('whipper', function() {
       }).fail(done);
     });
 
-    it('should proxy calls to a worker with callback', function() {
+    it('should proxy calls to a worker with callback', function(done) {
       createWhipper({
         maxWorkers: 1
       });
 
       whipper.workerProxy().then(function(worker) {
-        worker.hello('hi', function(reply) {
+        worker.returnResult('hi', function(reply) {
           assert.equal('hi', reply);
           done();
         });
       });
     });
 
-    it('should proxy calls to a worker with promise', function() {
+    it('should proxy calls to a worker with promise', function(done) {
       createWhipper({
         maxWorkers: 1
       });
 
       whipper.workerProxy().then(function(worker) {
-        worker.hello('hi').then(function(reply) {
+        worker.returnResult('hi').then(function(reply) {
           assert.equal('hi', reply);
           done();
         });

@@ -1,6 +1,8 @@
+/*jshint -W030 */
+"use strict";
+
 const Q = require('q');
 const assert = require('assert');
-const should = require('chai').should();
 const Pipe = require('../../lib/pipe');
 const TimeoutError = require('../../lib/error/timeout-error');
 
@@ -63,7 +65,7 @@ describe('pipe', function() {
         receiver({
           id: data.id,
           message: data.message
-        })
+        });
       });
 
       p.send({ foo: 'bar' }).then(function(reply) {
@@ -83,7 +85,7 @@ describe('pipe', function() {
           receiver({
             id: data.id,
             message: data.message
-          })
+          });
         }, 0);
       });
 
@@ -103,7 +105,7 @@ describe('pipe', function() {
       p.pending().should.equal(1);
     });
 
-    it('should be rejected when flushing', function() {
+    it('should be rejected when flushing', function(done) {
       var p = createPipe();
       var receiver = p.receiver();
 
@@ -113,7 +115,7 @@ describe('pipe', function() {
           receiver({
             id: data.id,
             message: data.message
-          })
+          });
         }, 0);
       });
 
@@ -127,7 +129,7 @@ describe('pipe', function() {
       });
     });
 
-    it('should be rejected when message timed out', function() {
+    it('should be rejected when message timed out', function(done) {
       var p = createPipe({
         pendingTimeout: 500
       });
@@ -139,7 +141,7 @@ describe('pipe', function() {
           receiver({
             id: data.id,
             message: data.message
-          })
+          });
         }, 700);
       });
 
@@ -170,7 +172,7 @@ describe('pipe', function() {
           receiver({
             id: data.id,
             message: data.message
-          })
+          });
         }, 0);
       });
 
@@ -195,7 +197,7 @@ describe('pipe', function() {
           receiver({
             id: data.id,
             message: data.message
-          })
+          });
         }, 0);
       });
 

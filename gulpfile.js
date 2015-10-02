@@ -1,5 +1,4 @@
 'use strict';
-var path = require('path');
 var gulp = require('gulp');
 var mocha = require('gulp-mocha');
 var jshint = require('gulp-jshint');
@@ -20,8 +19,8 @@ gulp.task('docs', function() {
 
 gulp.task('static', function() {
   return gulp.src([
-      '**/*.js',
-      '!node_modules/**'
+      'lib/**/*.js',
+      'test/**/*.js'
     ])
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter('jshint-stylish'))
@@ -32,7 +31,7 @@ gulp.task('static', function() {
 
 gulp.task('pre-test', function() {
   return gulp.src('lib/**/*.js')
-    .pipe(istanbul({includeUntested: true}))
+    .pipe(istanbul({ includeUntested: false }))
     .pipe(istanbul.hookRequire());
 });
 
@@ -41,11 +40,12 @@ gulp.task('test', ['pre-test'], function(cb) {
 
   gulp.src('test/**/*.js')
     .pipe(plumber())
-    .pipe(mocha({reporter: 'spec'}))
+    .pipe(mocha({ reporter: 'spec' }))
     .on('error', function (err) {
       mochaErr = err;
     })
     .pipe(istanbul.writeReports())
+    //.pipe(istanbul.enforceThresholds({ thresholds: { global: 79 } }))
     .on('end', function () {
       cb(mochaErr);
     });

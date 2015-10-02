@@ -1,4 +1,15 @@
+"use-strict";
+
 var Q = require('q');
+
+// This is a safety measure to kill child processes when
+// whipper functions for controlling termination are failing.
+// This allows the overall test process to complete and report
+// upon the error.
+setTimeout(function() {
+  console.log("ERROR: Child process terminating itself: " + process.pid);
+  process.exit();
+}, 30000);
 
 module.exports = {
   returnResult: function(arg) {

@@ -1,11 +1,14 @@
+/*jshint -W030 */
+"use strict";
+
 const Q = require('q');
 const EventEmitter = require('events').EventEmitter;
 const assert = require('assert');
 
 const chai = require('chai');
 const expect = chai.expect;
-const should = chai.should();
 
+const should = chai.should(); // jshint ignore:line
 const WorkerHandle = require('../../lib/worker-handle');
 const WorkerPool = require('../../lib/worker-pool');
 
@@ -28,6 +31,12 @@ describe('worker-pool', function() {
 
   beforeEach(function() {
     testEmitter = new EventEmitter();
+  });
+
+  afterEach(function(done) {
+    pool.shutdown().then(function() {
+      done();
+    }).fail(done);
   });
 
   it('should have a predictable initial state', function() {
@@ -534,10 +543,10 @@ describe('worker-pool', function() {
           maxConcurrentCalls: 1
         });
         var availableCalled = false;
-        testEmitter.on("worker:pool:available", function() {
+        testEmitter.once("worker:pool:available", function() {
           availableCalled = true;
         });
-        testEmitter.on("worker:pool:unavailable", function() {
+        testEmitter.once("worker:pool:unavailable", function() {
           availableCalled.should.be.true;
           done();
         });

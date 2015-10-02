@@ -12,7 +12,16 @@ function getTestWorkerInterface() {
   return iface;
 }
 
+function forceKill(pid) {
+  try {
+    process.kill(pid);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
 module.exports = {
+  forceKill: forceKill,
   getTestWorkerInterface: getTestWorkerInterface
 };

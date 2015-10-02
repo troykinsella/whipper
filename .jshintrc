@@ -6,6 +6,6 @@
   "newcap": true,
   "undef": true,
   "unused": "vars",
-  "strict": true,
+  "strict": false,
   "mocha": true
 }

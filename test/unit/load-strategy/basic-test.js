@@ -1,5 +1,6 @@
-const assert = require('assert');
-const should = require('chai').should();
+/*jshint -W030 */
+"use strict";
+
 const EventEmitter = require('events').EventEmitter;
 const BasicLoadStrategy = require('../../../lib/load-strategy/basic');
 
