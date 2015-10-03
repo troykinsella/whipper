@@ -6,10 +6,12 @@ var Q = require('q');
 // whipper functions for controlling termination are failing.
 // This allows the overall test process to complete and report
 // upon the error.
-setTimeout(function() {
-  console.log("ERROR: Child process terminating itself: " + process.pid);
-  process.exit();
-}, 30000);
+if (require.main.filename.indexOf('worker-wrapper.js')) {
+  setTimeout(function() {
+    console.log("ERROR: Child process terminating itself: " + process.pid);
+    process.exit();
+  }, 30000);
+}
 
 module.exports = {
   returnResult: function(arg) {
