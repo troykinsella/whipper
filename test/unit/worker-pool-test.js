@@ -8,12 +8,12 @@ const assert = require('assert');
 const chai = require('chai');
 const expect = chai.expect;
 
-const should = chai.should(); // jshint ignore:line
 const WorkerHandle = require('../../lib/worker-handle');
 const WorkerPool = require('../../lib/worker-pool');
 
 const testWorkerPath = require.resolve('../fixtures/test-worker');
 
+chai.should();
 Q.longStackSupport = true;
 
 var pool;
@@ -92,6 +92,17 @@ describe('worker-pool', function() {
             done();
           }).fail(done);
         }).fail(done);
+      }).fail(done);
+    });
+
+  });
+
+  describe('#aWorker', function() {
+
+    it('should return a worker', function(done) {
+      pool = createPool();
+      pool.addWorker().then(function(worker1) {
+        pool.aWorker().should.equal(worker1);
       }).fail(done);
     });
 

@@ -2,10 +2,12 @@
 "use strict";
 
 const Q = require('q');
+const chai = require('chai');
 const assert = require('assert');
 const Pipe = require('../../lib/pipe');
 const TimeoutError = require('../../lib/error/timeout-error');
 
+chai.should();
 Q.longStackSupport = true;
 
 function createPipe(options) {

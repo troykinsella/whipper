@@ -19,6 +19,7 @@ var wh;
 
 const cbGrace = 250;
 
+chai.should();
 Q.longStackSupport = true;
 
 function isProcessRunning(pid) {
