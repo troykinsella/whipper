@@ -13,6 +13,7 @@ Q.longStackSupport = true;
 function createPipe(options) {
   options = options || {};
   options.maxPending = options.maxPending || 1;
+  //options.logger = console.log;
 
   return new Pipe(options);
 }
@@ -151,6 +152,98 @@ describe('pipe', function() {
         assert.fail("Send succeeded");
       }).fail(function(err) {
         assert(err instanceof TimeoutError);
+        done();
+      });
+    });
+
+    it('should fail the call on error when retries disabled', function(done) {
+      var p = createPipe({
+        maxRetries: 0
+      });
+      p.receiver();
+
+      p.sender(function(data) {
+        var def = Q.defer();
+        def.reject(new Error("oh shiiii"));
+        return def.promise;
+      });
+
+      p.send({ bar: 'baz' }).then(function(reply) {
+        assert.fail("Send succeeded");
+      }).fail(function(err) {
+        assert(err instanceof Error);
+        done();
+      });
+    });
+
+    it('should retry once then fail on error', function(done) {
+      var p = createPipe({
+        maxRetries: 1
+      });
+      p.receiver();
+
+      var sendAttempts = 0;
+
+      p.sender(function(data) {
+        sendAttempts++;
+        var def = Q.defer();
+        def.reject(new Error("oh shiiii"));
+        return def.promise;
+      });
+
+      p.send({ bar: 'baz' }).then(function(reply) {
+        assert.fail("Send succeeded");
+      }).fail(function(err) {
+        assert(err instanceof Error);
+        sendAttempts.should.be.above(1);
+        done();
+      });
+    });
+
+    it('should retry twice then fail on error', function(done) {
+      var p = createPipe({
+        maxRetries: 2
+      });
+      p.receiver();
+
+      var sendAttempts = 0;
+
+      p.sender(function(data) {
+        sendAttempts++;
+        var def = Q.defer();
+        def.reject(new Error("oh shiiii"));
+        return def.promise;
+      });
+
+      p.send({ bar: 'baz' }).then(function(reply) {
+        assert.fail("Send succeeded");
+      }).fail(function(err) {
+        assert(err instanceof Error);
+        sendAttempts.should.be.above(2);
+        done();
+      });
+    });
+
+    it('should retry thrice then fail on error', function(done) {
+      var p = createPipe({
+        maxRetries: 3
+      });
+      p.receiver();
+
+      var sendAttempts = 0;
+
+      p.sender(function(data) {
+        sendAttempts++;
+        var def = Q.defer();
+        def.reject(new Error("oh shiiii"));
+        return def.promise;
+      });
+
+      p.send({ bar: 'baz' }).then(function(reply) {
+        assert.fail("Send succeeded");
+      }).fail(function(err) {
+        assert(err instanceof Error);
+        sendAttempts.should.be.above(3);
         done();
       });
     });

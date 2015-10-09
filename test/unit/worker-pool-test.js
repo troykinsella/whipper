@@ -24,7 +24,7 @@ function createPool(options) {
   options.workerModulePath = testWorkerPath;
   //options.logger = console.log;
 
-  return new WorkerPool(testEmitter, options);
+  pool = new WorkerPool(testEmitter, options);
 }
 
 describe('worker-pool', function() {
@@ -40,7 +40,7 @@ describe('worker-pool', function() {
   });
 
   it('should have a predictable initial state', function() {
-    pool = createPool();
+    createPool();
     pool.workerCount().should.equal(0);
     pool.allWorkers().values().should.deep.equal([]);
     pool.idleWorkers().values().should.deep.equal([]);
@@ -54,7 +54,7 @@ describe('worker-pool', function() {
   describe('#addWorker', function() {
 
     it('should add a worker when empty', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function(worker) {
         (worker instanceof WorkerHandle).should.be.true;
         pool.workerCount().should.equal(1);
@@ -65,7 +65,7 @@ describe('worker-pool', function() {
     });
 
     it('should add a worker when not empty', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function() {
         pool.addWorker().then(function(worker) {
           (worker instanceof WorkerHandle).should.be.true;
@@ -82,7 +82,7 @@ describe('worker-pool', function() {
   describe('#allWorkers', function() {
 
     it('should return all workers', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function(worker1) {
         pool.allWorkers().values().should.deep.equal([ worker1 ]);
         pool.addWorker().then(function(worker2) {
@@ -100,9 +100,10 @@ describe('worker-pool', function() {
   describe('#aWorker', function() {
 
     it('should return a worker', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function(worker1) {
         pool.aWorker().should.equal(worker1);
+        done();
       }).fail(done);
     });
 
@@ -111,7 +112,7 @@ describe('worker-pool', function() {
   describe('#idleWorkers', function() {
 
     it('should return idle workers', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function(worker1) {
         pool.idleWorkers().values().should.deep.equal([ worker1 ]);
         pool.addWorker().then(function(worker2) {
@@ -122,7 +123,7 @@ describe('worker-pool', function() {
     });
 
     it('should not return non-idle workers', function(done) {
-      pool = createPool({
+      createPool({
         maxConcurrentCalls: 1
       });
       pool.addWorker().then(function(worker1) {
@@ -139,7 +140,7 @@ describe('worker-pool', function() {
   describe('#idleWorker', function() {
 
     it('should return idle worker', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function(worker1) {
         pool.idleWorker().should.equal(worker1);
         pool.addWorker().then(function(worker2) {
@@ -150,7 +151,7 @@ describe('worker-pool', function() {
     });
 
     it('should not return non-idle worker', function(done) {
-      pool = createPool({
+      createPool({
         maxConcurrentCalls: 1
       });
       pool.addWorker().then(function(worker1) {
@@ -167,7 +168,7 @@ describe('worker-pool', function() {
   describe('#busyWorkers', function() {
 
     it('should return busy workers', function(done) {
-      pool = createPool({
+      createPool({
         maxConcurrentCalls: 2
       });
       pool.addWorker().then(function(worker1) {
@@ -184,7 +185,7 @@ describe('worker-pool', function() {
   describe('#busyWorker', function() {
 
     it('should return busy worker', function(done) {
-      pool = createPool({
+      createPool({
         maxConcurrentCalls: 2
       });
       pool.addWorker().then(function(worker1) {
@@ -201,7 +202,7 @@ describe('worker-pool', function() {
   describe('#atCapacityWorkers', function() {
 
     it('should return at-capacity worker', function(done) {
-      pool = createPool({
+      createPool({
         maxConcurrentCalls: 1
       });
       pool.addWorker().then(function(worker1) {
@@ -227,38 +228,38 @@ describe('worker-pool', function() {
     }
 
     it('should do nothing when no parameters passed and empty', function(done) {
-      pool = createPool();
+      createPool();
       assertNothingHappens(pool, undefined, done);
     });
 
     it('should do nothing when zero passed and empty', function(done) {
-      pool = createPool();
+      createPool();
       assertNothingHappens(pool, 0, done);
     });
 
     it('should do nothing when no parameters passed and not empty', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function() {
         assertNothingHappens(pool, undefined, done);
       }).fail(done);
     });
 
     it('should do nothing when zero passed and not empty', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function() {
         assertNothingHappens(pool, 0, done);
       }).fail(done);
     });
 
     it('should do nothing when worker count equals requested minimum', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function() {
         assertNothingHappens(pool, 1, done);
       }).fail(done);
     });
 
     it('should do nothing when worker count greater than requested minimum', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function() {
         return pool.addWorker();
       }).then(function() {
@@ -267,7 +268,7 @@ describe('worker-pool', function() {
     });
 
     it('should create one worker when empty', function(done) {
-      pool = createPool();
+      createPool();
       pool.ensureMinimumWorkers(1).then(function() {
         pool.workerCount().should.equal(1);
         done();
@@ -275,7 +276,7 @@ describe('worker-pool', function() {
     });
 
     it('should create one worker when not empty', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function() {
         return pool.ensureMinimumWorkers(2);
       }).then(function() {
@@ -285,7 +286,7 @@ describe('worker-pool', function() {
     });
 
     it('should create two workers when empty', function(done) {
-      pool = createPool();
+      createPool();
       pool.ensureMinimumWorkers(2).then(function() {
         pool.workerCount().should.equal(2);
         done();
@@ -293,7 +294,7 @@ describe('worker-pool', function() {
     });
 
     it('should create two workers when not empty', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function() {
         return pool.ensureMinimumWorkers(3);
       }).then(function() {
@@ -303,7 +304,7 @@ describe('worker-pool', function() {
     });
 
     it('should create three workers when empty', function(done) {
-      pool = createPool();
+      createPool();
       pool.ensureMinimumWorkers(3).then(function() {
         pool.workerCount().should.equal(3);
         done();
@@ -311,7 +312,7 @@ describe('worker-pool', function() {
     });
 
     it('should create three workers when not empty', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function() {
         return pool.ensureMinimumWorkers(4);
       }).then(function() {
@@ -324,7 +325,7 @@ describe('worker-pool', function() {
   describe('#removeWorker', function() {
 
     it('should reject when empty', function(done) {
-      pool = createPool();
+      createPool();
       pool.removeWorker().then(function() {
         assert.fail("Removal succeeded");
       }).fail(function(result) {
@@ -334,7 +335,7 @@ describe('worker-pool', function() {
     });
 
     it('should remove a worker when one exists', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function(workerAdded) {
         pool.removeWorker().then(function(workerRemoved) {
           workerRemoved.should.equal(workerAdded);
@@ -346,7 +347,7 @@ describe('worker-pool', function() {
     });
 
     it('should remove a worker when two exist', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function() {
         return pool.addWorker();
       }).then(function() {
@@ -359,7 +360,7 @@ describe('worker-pool', function() {
     });
 
     it('should remove a worker when three exist', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function() {
         return pool.addWorker();
       }).then(function() {
@@ -374,7 +375,7 @@ describe('worker-pool', function() {
     });
 
     it('should remove a specific worker', function(done) {
-      pool = createPool();
+      createPool();
       pool.ensureMinimumWorkers(3).then(function() {
         var aWorker = pool.allWorkers().values()[1];
         pool.removeWorker(aWorker).then(function(workerRemoved) {
@@ -402,31 +403,31 @@ describe('worker-pool', function() {
     }
 
     it('should do nothing when no parameters passed and empty', function(done) {
-      pool = createPool();
+      createPool();
       assertNothingHappens(pool, undefined, done);
     });
 
     it('should do nothing when zero passed and empty', function(done) {
-      pool = createPool();
+      createPool();
       assertNothingHappens(pool, 0, done);
     });
 
     it('should do nothing when no parameters passed and not empty', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function() {
         assertNothingHappens(pool, undefined, done);
       }).fail(done);
     });
 
     it('should do nothing when worker count equals requested maximum', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function() {
         assertNothingHappens(pool, 1, done);
       }).fail(done);
     });
 
     it('should do nothing when worker count less than requested maximum', function(done) {
-      pool = createPool();
+      createPool();
       pool.addWorker().then(function() {
         return pool.addWorker();
       }).then(function() {
@@ -435,7 +436,7 @@ describe('worker-pool', function() {
     });
 
     it('should remove one worker when one exists', function(done) {
-      pool = createPool();
+      createPool();
       pool.ensureMinimumWorkers(1).then(function() {
         return pool.ensureMaximumWorkers(0);
       }).then(function() {
@@ -445,7 +446,7 @@ describe('worker-pool', function() {
     });
 
     it('should remove one worker when two exists', function(done) {
-      pool = createPool();
+      createPool();
       pool.ensureMinimumWorkers(2).then(function() {
         return pool.ensureMaximumWorkers(1);
       }).then(function() {
@@ -455,7 +456,7 @@ describe('worker-pool', function() {
     });
 
     it('should remove two workers when two exist', function(done) {
-      pool = createPool();
+      createPool();
       pool.ensureMinimumWorkers(2).then(function() {
         return pool.ensureMaximumWorkers(0);
       }).then(function() {
@@ -465,7 +466,7 @@ describe('worker-pool', function() {
     });
 
     it('should remove two workers when three exist', function(done) {
-      pool = createPool();
+      createPool();
       pool.ensureMinimumWorkers(3).then(function() {
         return pool.ensureMaximumWorkers(1);
       }).then(function() {
@@ -475,7 +476,7 @@ describe('worker-pool', function() {
     });
 
     it('should remove three workers when three exist', function(done) {
-      pool = createPool();
+      createPool();
       pool.ensureMinimumWorkers(3).then(function() {
         return pool.ensureMaximumWorkers(0);
       }).then(function() {
@@ -485,7 +486,7 @@ describe('worker-pool', function() {
     });
 
     it('should remove three workers when four exist', function(done) {
-      pool = createPool();
+      createPool();
       pool.ensureMinimumWorkers(4).then(function() {
         return pool.ensureMaximumWorkers(1);
       }).then(function() {
@@ -499,14 +500,14 @@ describe('worker-pool', function() {
   describe('#shutdown', function() {
 
     it('should do nothing when empty', function(done) {
-      pool = createPool();
+      createPool();
       pool.shutdown().then(function() {
         done();
       }).fail(done);
     });
 
     it('should destroy all workers', function(done) {
-      pool = createPool();
+      createPool();
       pool.ensureMinimumWorkers(3).then(function() {
         return pool.shutdown();
       }).then(function() {
@@ -521,7 +522,7 @@ describe('worker-pool', function() {
     describe('worker:pool:available', function() {
 
       it('should emit when pool first available', function(done) {
-        pool = createPool();
+        createPool();
         testEmitter.on("worker:pool:available", function() {
           done();
         });
@@ -529,7 +530,7 @@ describe('worker-pool', function() {
       });
 
       it('should emit when pool returns to available', function(done) {
-        pool = createPool({
+        createPool({
           maxConcurrentCalls: 1
         });
 
@@ -550,7 +551,7 @@ describe('worker-pool', function() {
     describe('worker:pool:unavailable', function() {
 
       it('should emit when pool first unavailable', function(done) {
-        pool = createPool({
+        createPool({
           maxConcurrentCalls: 1
         });
         var availableCalled = false;
@@ -568,7 +569,7 @@ describe('worker-pool', function() {
       });
 
       it('should emit when pool returns to unavailable', function(done) {
-        pool = createPool({
+        createPool({
           maxConcurrentCalls: 1
         });
 
