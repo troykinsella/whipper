@@ -67,6 +67,7 @@ describe('worker-handle', function() {
     wh.state().should.equal(WorkerHandle.State.created);
     wh.workingStatus().should.equal(WorkerHandle.WorkingStatus.idle);
     expect(wh.exitCode()).to.be.null;
+    expect(wh.exitSignal()).to.be.null;
     wh.pendingCalls().should.equal(0);
     wh.queuedCalls().should.equal(0);
   });
@@ -82,8 +83,8 @@ describe('worker-handle', function() {
       timedOut.should.be.true;
 
       var elapsed = Date.now() - startTime;
-      elapsed.should.be.above(to);
-      elapsed.should.be.below(to + cbGrace);
+      elapsed.should.be.gte(to);
+      elapsed.should.be.lte(to + cbGrace);
       done();
     });
 
@@ -614,6 +615,47 @@ describe('worker-handle', function() {
         })
         .fail(done);
     });
+
+  });
+
+  describe("#stats", function() {
+
+    it('should reflect initial state', function() {
+      wh = createWH(1);
+      wh.stats().should.deep.equal({
+        callsHandled: 0,
+        errorCount: 0,
+        forkCount: 0,
+        maxSeenConcurrentCalls: 0,
+        resetCount: 0
+      });
+    });
+
+    it('should reflect fork count', function(done) {
+
+      wh = createWH(1);
+
+      wh.fork()
+        .then(function() {
+          wh.invoke('returnValue');
+          wh.stats().forkCount.should.equal(1);
+          done();
+        })
+        .fail(done);
+    });
+
+    it('should reflect call count', function(done) {
+      wh = createWH(1);
+
+      wh.fork()
+        .then(function() {
+          wh.invoke('returnValue');
+          wh.stats().callsHandled.should.equal(1);
+          done();
+        })
+        .fail(done);
+    });
+
 
   });
 

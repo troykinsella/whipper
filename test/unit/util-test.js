@@ -39,6 +39,26 @@ describe('util', function() {
     });
   });
 
+  describe('#createLoadStrategyForName', function() {
+    it('should create a basic strategy', function() {
+      var s = util.createLoadStrategyForName('basic', {}, {}, {});
+      s.should.be.an.instanceof(require('../../lib/load-strategy/basic'));
+    });
+
+    it('should create a strategy from a function', function() {
+      var s = util.createLoadStrategyForName(function() {
+        return 'foo';
+      }, {}, {}, {});
+      s.should.equal('foo');
+    });
+
+    it('should fail an invalid strategy name', function() {
+      assert.throws(function() {
+        util.createLoadStrategyForName('dronkey', {}, {}, {});
+      }, Error);
+    });
+  });
+
   describe('#deserializeError', function() {
 
     it('should deserialize standard error types', function() {

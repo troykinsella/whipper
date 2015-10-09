@@ -71,7 +71,7 @@ describe('worker-pool', function() {
           (worker instanceof WorkerHandle).should.be.true;
           pool.workerCount().should.equal(2);
           done();
-        });
+        }).fail(done);
 
         pool.workerCount().should.equal(2);
       }).fail(done);
@@ -118,8 +118,8 @@ describe('worker-pool', function() {
         pool.addWorker().then(function(worker2) {
           pool.idleWorkers().values().should.deep.equal([ worker1, worker2 ]);
           done();
-        });
-      });
+        }).fail(done);
+      }).fail(done);
     });
 
     it('should not return non-idle workers', function(done) {
@@ -131,8 +131,8 @@ describe('worker-pool', function() {
           worker1.invoke('returnResult');
           pool.idleWorkers().values().should.deep.equal([ worker2 ]);
           done();
-        });
-      });
+        }).fail(done);
+      }).fail(done);
     });
 
   });
@@ -146,8 +146,8 @@ describe('worker-pool', function() {
         pool.addWorker().then(function(worker2) {
           pool.idleWorker().should.equal(worker1);
           done();
-        });
-      });
+        }).fail(done);
+      }).fail(done);
     });
 
     it('should not return non-idle worker', function(done) {
@@ -159,8 +159,8 @@ describe('worker-pool', function() {
           worker1.invoke('returnResult');
           pool.idleWorker().should.equal(worker2);
           done();
-        });
-      });
+        }).fail(done);
+      }).fail(done);
     });
 
   });
@@ -176,8 +176,8 @@ describe('worker-pool', function() {
           worker1.invoke('returnResult');
           pool.busyWorkers().values().should.deep.equal([ worker1 ]);
           done();
-        });
-      });
+        }).fail(done);
+      }).fail(done);
     });
 
   });
@@ -193,15 +193,32 @@ describe('worker-pool', function() {
           worker1.invoke('returnResult');
           pool.busyWorker().should.equal(worker1);
           done();
-        });
+        }).fail(done);
+      }).fail(done);
+    });
+
+  });
+
+  describe('#busyWorkerCount', function() {
+
+    it('should return busy worker count', function(done) {
+      createPool({
+        maxConcurrentCalls: 2
       });
+      pool.addWorker().then(function(worker1) {
+        pool.addWorker().then(function(worker2) {
+          worker1.invoke('returnResult');
+          pool.busyWorkerCount().should.equal(1);
+          done();
+        }).fail(done);
+      }).fail(done);
     });
 
   });
 
   describe('#atCapacityWorkers', function() {
 
-    it('should return at-capacity worker', function(done) {
+    it('should return at-capacity workers', function(done) {
       createPool({
         maxConcurrentCalls: 1
       });
@@ -210,8 +227,25 @@ describe('worker-pool', function() {
           worker1.invoke('returnResult');
           pool.atCapacityWorkers().values().should.deep.equal([ worker1 ]);
           done();
-        });
+        }).fail(done);
+      }).fail(done);
+    });
+
+  });
+
+  describe('#atCapacityWorkerCount', function() {
+
+    it('should return at-capacity worker count', function(done) {
+      createPool({
+        maxConcurrentCalls: 1
       });
+      pool.addWorker().then(function(worker1) {
+        pool.addWorker().then(function(worker2) {
+          worker1.invoke('returnResult');
+          pool.atCapacityWorkerCount().should.equal(1);
+          done();
+        }).fail(done);
+      }).fail(done);
     });
 
   });
@@ -526,7 +560,7 @@ describe('worker-pool', function() {
         testEmitter.on("worker:pool:available", function() {
           done();
         });
-        pool.addWorker();
+        pool.addWorker().fail(done);
       });
 
       it('should emit when pool returns to available', function(done) {
@@ -543,7 +577,7 @@ describe('worker-pool', function() {
 
         pool.addWorker().then(function(worker) {
           worker.invoke('returnResult');
-        });
+        }).fail(done);
       });
 
     });
@@ -564,8 +598,8 @@ describe('worker-pool', function() {
         });
 
         pool.addWorker().then(function(worker) {
-          worker.invoke('returnResult');
-        });
+          worker.invoke('returnResult').fail(done);
+        }).fail(done);
       });
 
       it('should emit when pool returns to unavailable', function(done) {
@@ -582,11 +616,62 @@ describe('worker-pool', function() {
 
         pool.addWorker().then(function(worker) {
           worker.invoke('returnResult').then(function() {
-            worker.invoke('returnResult');
-          });
-        });
+            worker.invoke('returnResult').fail(done);
+          }).fail(done);
+        }).fail(done);
       });
 
+    });
+
+  });
+
+  describe("#stats", function() {
+
+    it('should reflect initial state', function() {
+      createPool();
+
+      pool.stats().should.deep.equal({
+        atCapacityWorkerCount: 0,
+        busyWorkerCount: 0,
+        idleWorkerCount: 0,
+        maxSeenWorkerCount: 0,
+        workerCount: 0,
+        workers: {
+          callsHandled: 0,
+          errorCount: 0,
+          forkCount: 0,
+          maxSeenConcurrentCalls: 0,
+          resetCount: 0
+        }
+      });
+    });
+
+    it('should reflect state of several workers', function(done) {
+      createPool({
+        maxConcurrentCalls: 2
+      });
+      pool.addWorker().then(function(worker1) {
+        pool.addWorker().then(function(worker2) {
+          worker1.invoke('returnResult').fail(done);
+
+          pool.stats().should.deep.equal({
+            atCapacityWorkerCount: 0,
+            busyWorkerCount: 1,
+            idleWorkerCount: 1,
+            maxSeenWorkerCount: 2,
+            workerCount: 2,
+            workers: {
+              callsHandled: 1,
+              errorCount: 0,
+              forkCount: 2,
+              maxSeenConcurrentCalls: 1,
+              resetCount: 0
+            }
+          });
+
+          done();
+        }).fail(done);
+      }).fail(done);
     });
 
   });
