@@ -14,7 +14,7 @@ Q.longStackSupport = true;
 function createWhipper(options) {
   options = options || {};
   options.workerModulePath = testWorkerPath;
-  options.logger = console.log;
+  //options.logger = console.log;
 
   whipper = new Whipper(options);
 }

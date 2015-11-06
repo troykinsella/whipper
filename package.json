@@ -2,8 +2,11 @@
   "name": "whipper",
   "version": "0.0.0",
   "description": "A child process management library for node.js",
-  "homepage": "https://bitbucket.org/troykinsella/whipper",
-  "repository": "https://bitbucket.org/troykinsella/whipper",
+  "homepage": "https://github.com/troykinsella/whipper",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:troykinsella/whipper.git"
+  },
   "author": {
     "name": "Troy Kinsella"
   },
@@ -18,25 +21,25 @@
     "fork"
   ],
   "devDependencies": {
-    "chai": "^3.3.0",
+    "chai": "^3.4.0",
     "gulp": "^3.9.0",
     "gulp-eslint": "^1.0.0",
-    "gulp-istanbul": "^0.10.1",
-    "gulp-jscs": "^3.0.1",
+    "gulp-istanbul": "^0.10.2",
+    "gulp-jscs": "^3.0.2",
     "gulp-jsdoc": "^0.1.5",
-    "gulp-jshint": "^1.11.2",
+    "gulp-jshint": "^1.12.0",
     "gulp-mocha": "^2.1.3",
     "gulp-plumber": "^1.0.1",
     "jack-chai": "^0.1.0",
     "jshint-stylish": "^2.0.1"
   },
   "scripts": {
-    "test": "gulp"
+    "test": "gulp test"
   },
   "license": "MIT",
   "dependencies": {
-    "joi": "^6.8.1",
-    "linked-map": "^2.2.1",
+    "joi": "^7.0.0",
+    "linked-map": "^2.2.2",
     "lodash": "^3.10.1",
     "q": "^1.4.1"
   }
