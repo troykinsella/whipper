@@ -30,12 +30,37 @@ First, define a worker module:
 ```js
 // my-worker.js
 
+function hi(person) {
+  return Array(400).join('hi ' + person);
+}
+
+// Expose the interface by which whipper will call me
 module.exports = {
+
   sayHi: function(person) {
-    return Array(400).join('hi ' + person);
+    // Reply now
+    return hi(person);
+  },
+
+  sayHiLater: function(person, done) {
+    // Reply later
+    process.nextTick(function() {
+      done(hi(person));
+    });
+  },
+
+  promiseToSayHi: function(person) {
+     // es6
+     return new Promise(function(resolve, reject) {
+        process.nextTick(function() {
+          deferred.resolve(hi(person));
+        });
+     });
   }
 };
 ```
+All of these worker methods would behave identically, but you can select 
+whichever reply style is best for your worker design.
 
 Create a whipper pool with basic configuration:
 
@@ -102,7 +127,7 @@ whipper
   });
 ```
 
-Inovke a worker function:
+Invoke a worker function:
 
 ```js
 whipper.invoke("sayHi", "Winfred").then(function(result) {
