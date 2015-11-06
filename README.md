@@ -53,7 +53,7 @@ module.exports = {
      // es6
      return new Promise(function(resolve, reject) {
         process.nextTick(function() {
-          deferred.resolve(hi(person));
+          resolve(hi(person));
         });
      });
   }
