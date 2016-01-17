@@ -1,16 +1,16 @@
 /*jshint -W030 */
 "use strict";
 
-const EventEmitter = require('events').EventEmitter;
-const assert = require('assert');
+var EventEmitter = require('events').EventEmitter;
+var assert = require('assert');
 
-const chai = require('chai');
-const expect = chai.expect;
+var chai = require('chai');
+var expect = chai.expect;
 
-const WorkerHandle = require('../../lib/worker-handle');
-const WorkerPool = require('../../lib/worker-pool');
+var WorkerHandle = require('../../lib/worker-handle');
+var WorkerPool = require('../../lib/worker-pool');
 
-const testWorkerPath = require.resolve('../fixtures/test-worker');
+var testWorkerPath = require.resolve('../fixtures/test-worker');
 
 chai.should();
 

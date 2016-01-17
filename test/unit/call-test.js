@@ -1,6 +1,6 @@
 "use-strict";
 
-const chai = require('chai');
+var chai = require('chai');
 var Call = require('../../lib/call');
 
 chai.should();

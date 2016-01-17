@@ -1,9 +1,9 @@
 "use strict";
 
-const chai = require('chai');
-const assert = require('assert');
+var chai = require('chai');
+var assert = require('assert');
 
-const util = require('../../lib/util');
+var util = require('../../lib/util');
 
 chai.should();
 
@@ -89,7 +89,7 @@ describe('util', function() {
     });
 
     it('should fail invalid options', function() {
-      const schema = joi.compile({
+      var schema = joi.compile({
         foo: joi.number()
       });
 

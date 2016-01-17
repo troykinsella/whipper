@@ -1,8 +1,8 @@
 /*jshint -W030 */
 "use strict";
 
-const EventEmitter = require('events').EventEmitter;
-const BasicLoadStrategy = require('../../../lib/load-strategy/basic');
+var EventEmitter = require('events').EventEmitter;
+var BasicLoadStrategy = require('../../../lib/load-strategy/basic');
 
 var testEmitter;
 

@@ -1,10 +1,10 @@
 /*jshint -W030 */
 "use strict";
 
-const Whipper = require('../..');
-const assert = require('assert');
+var Whipper = require('../..');
+var assert = require('assert');
 
-const testWorkerPath = require.resolve('../fixtures/test-worker');
+var testWorkerPath = require.resolve('../fixtures/test-worker');
 
 var whipper;
 

@@ -1,10 +1,10 @@
 /*jshint -W030 */
 "use strict";
 
-const chai = require('chai');
-const assert = require('assert');
-const Pipe = require('../../lib/pipe');
-const TimeoutError = require('../../lib/error/timeout-error');
+var chai = require('chai');
+var assert = require('assert');
+var Pipe = require('../../lib/pipe');
+var TimeoutError = require('../../lib/error/timeout-error');
 
 chai.should();
 

@@ -1,22 +1,22 @@
 /*jshint -W030 */
 "use strict";
 
-const EventEmitter = require('events').EventEmitter;
+var EventEmitter = require('events').EventEmitter;
 
-const chai = require('chai');
-const expect = chai.expect;
+var chai = require('chai');
+var expect = chai.expect;
 
-const WorkerHandle = require('../../lib/worker-handle');
-const TimeoutError = require('../../lib/error/timeout-error');
-const testUtil = require('../util');
-const testWorkerPath = require.resolve('../fixtures/test-worker');
+var WorkerHandle = require('../../lib/worker-handle');
+var TimeoutError = require('../../lib/error/timeout-error');
+var testUtil = require('../util');
+var testWorkerPath = require.resolve('../fixtures/test-worker');
 
-const testWorkerInterface = testUtil.getTestWorkerInterface();
+var testWorkerInterface = testUtil.getTestWorkerInterface();
 
 var testEmitter;
 var wh;
 
-const cbGrace = 250;
+var cbGrace = 250;
 
 chai.should();
 

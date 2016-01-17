@@ -1,13 +1,13 @@
 /*jshint -W030 */
 "use strict";
 
-const EventEmitter = require('events').EventEmitter;
-const assert = require('assert');
+var EventEmitter = require('events').EventEmitter;
+var assert = require('assert');
 
-const chai = require('chai');
+var chai = require('chai');
 
-const Call = require('../../lib/call');
-const CallDispatcher = require('../../lib/call-dispatcher');
+var Call = require('../../lib/call');
+var CallDispatcher = require('../../lib/call-dispatcher');
 
 chai.should();
 

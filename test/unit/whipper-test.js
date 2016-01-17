@@ -1,12 +1,12 @@
 /*jshint -W030 */
 "use strict";
 
-const assert = require('assert');
-const testUtil = require('../util');
-const Whipper = require('../../lib/whipper');
-const WorkerProxy = require('../../lib/worker-proxy');
+var assert = require('assert');
+var testUtil = require('../util');
+var Whipper = require('../../lib/whipper');
+var WorkerProxy = require('../../lib/worker-proxy');
 
-const testWorkerPath = require.resolve('../fixtures/test-worker');
+var testWorkerPath = require.resolve('../fixtures/test-worker');
 
 var whipper;
 
