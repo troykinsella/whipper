@@ -1,14 +1,12 @@
 /*jshint -W030 */
 "use strict";
 
-const Q = require('q');
 const chai = require('chai');
 const assert = require('assert');
 const Pipe = require('../../lib/pipe');
 const TimeoutError = require('../../lib/error/timeout-error');
 
 chai.should();
-Q.longStackSupport = true;
 
 function createPipe(options) {
   options = options || {};
@@ -74,7 +72,7 @@ describe('pipe', function() {
       p.send({ foo: 'bar' }).then(function(reply) {
         reply.should.deep.equal({ foo: 'bar' });
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should begin queueing when maxPending met', function(done) {
@@ -102,7 +100,7 @@ describe('pipe', function() {
       p.send({ bar: 'baz' }).then(function(reply) {
         reply.should.deep.equal({ bar: 'baz' });
         done();
-      }).fail(done);
+      }).catch(done);
 
       p.queued().should.equal(1);
       p.pending().should.equal(1);
@@ -126,7 +124,7 @@ describe('pipe', function() {
       p.flush();
       p.send({ bar: 'baz' }).then(function(reply) {
         assert.fail("Send during flush succeeded");
-      }).fail(function(err) {
+      }).catch(function(err) {
         assert(err instanceof Error);
         done();
       });
@@ -150,7 +148,7 @@ describe('pipe', function() {
 
       p.send({ bar: 'baz' }).then(function(reply) {
         assert.fail("Send succeeded");
-      }).fail(function(err) {
+      }).catch(function(err) {
         assert(err instanceof TimeoutError);
         done();
       });
@@ -163,14 +161,12 @@ describe('pipe', function() {
       p.receiver();
 
       p.sender(function(data) {
-        var def = Q.defer();
-        def.reject(new Error("oh shiiii"));
-        return def.promise;
+        return Promise.reject(new Error("oh shiiii"));
       });
 
       p.send({ bar: 'baz' }).then(function(reply) {
         assert.fail("Send succeeded");
-      }).fail(function(err) {
+      }).catch(function(err) {
         assert(err instanceof Error);
         done();
       });
@@ -186,14 +182,15 @@ describe('pipe', function() {
 
       p.sender(function(data) {
         sendAttempts++;
-        var def = Q.defer();
-        def.reject(new Error("oh shiiii"));
-        return def.promise;
+
+        return new Promise(function(resolve, reject) {
+          reject(new Error("oh shiiii"));
+        });
       });
 
       p.send({ bar: 'baz' }).then(function(reply) {
         assert.fail("Send succeeded");
-      }).fail(function(err) {
+      }).catch(function(err) {
         assert(err instanceof Error);
         sendAttempts.should.be.above(1);
         done();
@@ -210,14 +207,12 @@ describe('pipe', function() {
 
       p.sender(function(data) {
         sendAttempts++;
-        var def = Q.defer();
-        def.reject(new Error("oh shiiii"));
-        return def.promise;
+        return Promise.reject(new Error("oh shiiii"));
       });
 
       p.send({ bar: 'baz' }).then(function(reply) {
         assert.fail("Send succeeded");
-      }).fail(function(err) {
+      }).catch(function(err) {
         assert(err instanceof Error);
         sendAttempts.should.be.above(2);
         done();
@@ -234,14 +229,12 @@ describe('pipe', function() {
 
       p.sender(function(data) {
         sendAttempts++;
-        var def = Q.defer();
-        def.reject(new Error("oh shiiii"));
-        return def.promise;
+        return Promise.reject(new Error("oh shiiii"));
       });
 
       p.send({ bar: 'baz' }).then(function(reply) {
         assert.fail("Send succeeded");
-      }).fail(function(err) {
+      }).catch(function(err) {
         assert(err instanceof Error);
         sendAttempts.should.be.above(3);
         done();
@@ -254,7 +247,7 @@ describe('pipe', function() {
 
     it('should resolve immediately when no pending and queued', function(done) {
       var p = createPipe();
-      p.flush().then(done).fail(done);
+      p.flush().then(done).catch(done);
     });
 
     it('should resolve when pending returns and no queued', function(done) {
@@ -272,13 +265,13 @@ describe('pipe', function() {
       });
 
       p.send({ foo: 'bar' })
-        .fail(done);
+        .catch(done);
 
       p.flush().then(function() {
         p.queued().should.equal(0);
         p.pending().should.equal(0);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should resolve when pending and queued', function(done) {
@@ -297,15 +290,15 @@ describe('pipe', function() {
       });
 
       p.send({ foo: 'bar' })
-        .fail(done);
+        .catch(done);
       p.send({ bar: 'baz' })
-        .fail(done);
+        .catch(done);
 
       p.flush().then(function() {
         p.queued().should.equal(0);
         p.pending().should.equal(0);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
   });

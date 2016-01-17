@@ -41,14 +41,14 @@ describe('call', function() {
               cb('result');
               return this;
             },
-            fail: function(cb) {
+            catch: function(cb) {
               cb();
             }
           };
         }
       });
 
-      p.should.equal(c.deferred.promise);
+      p.should.equal(c.promise);
 
       p.then(function(result) {
         result.should.equal('result');

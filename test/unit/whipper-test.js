@@ -1,15 +1,12 @@
 /*jshint -W030 */
 "use strict";
 
-const Q = require('q');
 const assert = require('assert');
 const testUtil = require('../util');
 const Whipper = require('../../lib/whipper');
 const WorkerProxy = require('../../lib/worker-proxy');
 
 const testWorkerPath = require.resolve('../fixtures/test-worker');
-
-Q.longStackSupport = true;
 
 var whipper;
 
@@ -26,7 +23,7 @@ describe('whipper', function() {
   afterEach(function(done) {
     whipper.shutdown().then(function() {
       done();
-    }).fail(done);
+    }).catch(done);
   });
 
   /*it('should immediately initialize workers', function(done) {
@@ -68,7 +65,7 @@ describe('whipper', function() {
           assert.equal('hi', reply);
           done();
         })
-        .fail(done);
+        .catch(done);
     });
   });
 
@@ -82,7 +79,7 @@ describe('whipper', function() {
       whipper.workerProxy().then(function(proxy) {
         assert(proxy instanceof WorkerProxy);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should reflect the worker interface', function(done) {
@@ -102,7 +99,7 @@ describe('whipper', function() {
 
         assert.deepEqual(testUtil.getTestWorkerInterface(), iface);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should proxy calls to a worker with callback', function(done) {

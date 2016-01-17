@@ -1,15 +1,12 @@
 /*jshint -W030 */
 "use strict";
 
-const Q = require('q');
 const Whipper = require('../..');
 const assert = require('assert');
 
 const testWorkerPath = require.resolve('../fixtures/test-worker');
 
 var whipper;
-
-Q.longStackSupport = true;
 
 function createWhipper(options) {
   options = options || {};
@@ -49,7 +46,7 @@ function expectReplies(whipperOpts, calls, done) {
   }
 
   for (i = 0; i < calls; i++) {
-    whipper.invoke('returnResult', [ i ]).then(handleReply).fail(done);
+    whipper.invoke('returnResult', [ i ]).then(handleReply).catch(done);
   }
 }
 
@@ -63,7 +60,7 @@ describe('whipper integration', function() {
   afterEach(function(done) {
     whipper.shutdown().then(function() {
       done();
-    }).fail(done);
+    }).catch(done);
   });
 
 

@@ -1,6 +1,6 @@
 "use-strict";
 
-var Q = require('q');
+require('es6-promise');
 
 // This is a safety measure to kill child processes when
 // whipper functions for controlling termination are failing.
@@ -32,16 +32,14 @@ module.exports = {
     }, 0);
   },
   promiseResultNow: function(arg) {
-    var def = Q.defer();
-    def.resolve(arg);
-    return def.promise;
+    return Promise.resolve(arg);
   },
   promiseResultLater: function(arg) {
-    var def = Q.defer();
-    setTimeout(function() {
-      def.resolve(arg);
-    }, 0);
-    return def.promise;
+    return new Promise(function(resolve) {
+      setTimeout(function() {
+        resolve(arg);
+      }, 0);
+    });
   },
   returnError: function() {
     return new Error('I suck');
@@ -58,16 +56,14 @@ module.exports = {
     }, 0);
   },
   promiseErrorNow: function() {
-    var def = Q.defer();
-    def.reject(new Error('I suck'));
-    return def.promise;
+    return Promise.reject(new Error('I suck'));
   },
   promiseErrorLater: function() {
-    var def = Q.defer();
-    setTimeout(function() {
-      def.reject(new Error('I suck'));
-    }, 0);
-    return def.promise;
+    return new Promise(function(resolve, reject) {
+      setTimeout(function() {
+        reject(new Error('I suck'));
+      }, 0);
+    });
   },
   waitFor: function(ms, callback) {
     setTimeout(callback, ms);

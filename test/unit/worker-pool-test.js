@@ -1,7 +1,6 @@
 /*jshint -W030 */
 "use strict";
 
-const Q = require('q');
 const EventEmitter = require('events').EventEmitter;
 const assert = require('assert');
 
@@ -14,7 +13,6 @@ const WorkerPool = require('../../lib/worker-pool');
 const testWorkerPath = require.resolve('../fixtures/test-worker');
 
 chai.should();
-Q.longStackSupport = true;
 
 var pool;
 var testEmitter;
@@ -36,7 +34,7 @@ describe('worker-pool', function() {
   afterEach(function(done) {
     pool.shutdown().then(function() {
       done();
-    }).fail(done);
+    }).catch(done);
   });
 
   it('should have a predictable initial state', function() {
@@ -59,7 +57,7 @@ describe('worker-pool', function() {
         (worker instanceof WorkerHandle).should.be.true;
         pool.workerCount().should.equal(1);
         done();
-      }).fail(done);
+      }).catch(done);
 
       pool.workerCount().should.equal(1);
     });
@@ -71,10 +69,10 @@ describe('worker-pool', function() {
           (worker instanceof WorkerHandle).should.be.true;
           pool.workerCount().should.equal(2);
           done();
-        }).fail(done);
+        }).catch(done);
 
         pool.workerCount().should.equal(2);
-      }).fail(done);
+      }).catch(done);
     });
 
   });
@@ -90,9 +88,9 @@ describe('worker-pool', function() {
           pool.addWorker().then(function (worker3) {
             pool.allWorkers().values().should.deep.equal([worker1, worker2, worker3]);
             done();
-          }).fail(done);
-        }).fail(done);
-      }).fail(done);
+          }).catch(done);
+        }).catch(done);
+      }).catch(done);
     });
 
   });
@@ -104,7 +102,7 @@ describe('worker-pool', function() {
       pool.addWorker().then(function(worker1) {
         pool.aWorker().should.equal(worker1);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
   });
@@ -118,8 +116,8 @@ describe('worker-pool', function() {
         pool.addWorker().then(function(worker2) {
           pool.idleWorkers().values().should.deep.equal([ worker1, worker2 ]);
           done();
-        }).fail(done);
-      }).fail(done);
+        }).catch(done);
+      }).catch(done);
     });
 
     it('should not return non-idle workers', function(done) {
@@ -131,8 +129,8 @@ describe('worker-pool', function() {
           worker1.invoke('returnResult');
           pool.idleWorkers().values().should.deep.equal([ worker2 ]);
           done();
-        }).fail(done);
-      }).fail(done);
+        }).catch(done);
+      }).catch(done);
     });
 
   });
@@ -146,8 +144,8 @@ describe('worker-pool', function() {
         pool.addWorker().then(function(worker2) {
           pool.idleWorker().should.equal(worker1);
           done();
-        }).fail(done);
-      }).fail(done);
+        }).catch(done);
+      }).catch(done);
     });
 
     it('should not return non-idle worker', function(done) {
@@ -159,8 +157,8 @@ describe('worker-pool', function() {
           worker1.invoke('returnResult');
           pool.idleWorker().should.equal(worker2);
           done();
-        }).fail(done);
-      }).fail(done);
+        }).catch(done);
+      }).catch(done);
     });
 
   });
@@ -176,8 +174,8 @@ describe('worker-pool', function() {
           worker1.invoke('returnResult');
           pool.busyWorkers().values().should.deep.equal([ worker1 ]);
           done();
-        }).fail(done);
-      }).fail(done);
+        }).catch(done);
+      }).catch(done);
     });
 
   });
@@ -193,8 +191,8 @@ describe('worker-pool', function() {
           worker1.invoke('returnResult');
           pool.busyWorker().should.equal(worker1);
           done();
-        }).fail(done);
-      }).fail(done);
+        }).catch(done);
+      }).catch(done);
     });
 
   });
@@ -210,8 +208,8 @@ describe('worker-pool', function() {
           worker1.invoke('returnResult');
           pool.busyWorkerCount().should.equal(1);
           done();
-        }).fail(done);
-      }).fail(done);
+        }).catch(done);
+      }).catch(done);
     });
 
   });
@@ -227,8 +225,8 @@ describe('worker-pool', function() {
           worker1.invoke('returnResult');
           pool.atCapacityWorkers().values().should.deep.equal([ worker1 ]);
           done();
-        }).fail(done);
-      }).fail(done);
+        }).catch(done);
+      }).catch(done);
     });
 
   });
@@ -244,8 +242,8 @@ describe('worker-pool', function() {
           worker1.invoke('returnResult');
           pool.atCapacityWorkerCount().should.equal(1);
           done();
-        }).fail(done);
-      }).fail(done);
+        }).catch(done);
+      }).catch(done);
     });
 
   });
@@ -257,7 +255,7 @@ describe('worker-pool', function() {
       pool.ensureMinimumWorkers(arg).then(function() {
         pool.workerCount().should.equal(count);
         done();
-      }).fail(done);
+      }).catch(done);
       pool.workerCount().should.equal(count);
     }
 
@@ -275,21 +273,21 @@ describe('worker-pool', function() {
       createPool();
       pool.addWorker().then(function() {
         assertNothingHappens(pool, undefined, done);
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should do nothing when zero passed and not empty', function(done) {
       createPool();
       pool.addWorker().then(function() {
         assertNothingHappens(pool, 0, done);
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should do nothing when worker count equals requested minimum', function(done) {
       createPool();
       pool.addWorker().then(function() {
         assertNothingHappens(pool, 1, done);
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should do nothing when worker count greater than requested minimum', function(done) {
@@ -298,7 +296,7 @@ describe('worker-pool', function() {
         return pool.addWorker();
       }).then(function() {
         assertNothingHappens(pool, 1, done);
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should create one worker when empty', function(done) {
@@ -306,7 +304,7 @@ describe('worker-pool', function() {
       pool.ensureMinimumWorkers(1).then(function() {
         pool.workerCount().should.equal(1);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should create one worker when not empty', function(done) {
@@ -316,7 +314,7 @@ describe('worker-pool', function() {
       }).then(function() {
         pool.workerCount().should.equal(2);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should create two workers when empty', function(done) {
@@ -324,7 +322,7 @@ describe('worker-pool', function() {
       pool.ensureMinimumWorkers(2).then(function() {
         pool.workerCount().should.equal(2);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should create two workers when not empty', function(done) {
@@ -334,7 +332,7 @@ describe('worker-pool', function() {
       }).then(function() {
         pool.workerCount().should.equal(3);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should create three workers when empty', function(done) {
@@ -342,7 +340,7 @@ describe('worker-pool', function() {
       pool.ensureMinimumWorkers(3).then(function() {
         pool.workerCount().should.equal(3);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should create three workers when not empty', function(done) {
@@ -352,7 +350,7 @@ describe('worker-pool', function() {
       }).then(function() {
         pool.workerCount().should.equal(4);
         done();
-      }).fail(done);
+      }).catch(done);
     });
   });
 
@@ -362,10 +360,10 @@ describe('worker-pool', function() {
       createPool();
       pool.removeWorker().then(function() {
         assert.fail("Removal succeeded");
-      }).fail(function(result) {
+      }).catch(function(result) {
         result.should.be.false;
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should remove a worker when one exists', function(done) {
@@ -374,10 +372,10 @@ describe('worker-pool', function() {
         pool.removeWorker().then(function(workerRemoved) {
           workerRemoved.should.equal(workerAdded);
           done();
-        }).fail(done);
+        }).catch(done);
 
         pool.workerCount().should.equal(0);
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should remove a worker when two exist', function(done) {
@@ -387,10 +385,10 @@ describe('worker-pool', function() {
       }).then(function() {
         pool.removeWorker().then(function() {
           done();
-        }).fail(done);
+        }).catch(done);
 
         pool.workerCount().should.equal(1);
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should remove a worker when three exist', function(done) {
@@ -402,10 +400,10 @@ describe('worker-pool', function() {
       }).then(function() {
         pool.removeWorker().then(function() {
           done();
-        }).fail(done);
+        }).catch(done);
 
         pool.workerCount().should.equal(2);
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should remove a specific worker', function(done) {
@@ -415,10 +413,10 @@ describe('worker-pool', function() {
         pool.removeWorker(aWorker).then(function(workerRemoved) {
           workerRemoved.should.equal(aWorker);
           done();
-        }).fail(done);
+        }).catch(done);
 
         pool.workerCount().should.equal(2);
-      }).fail(done);
+      }).catch(done);
     });
 
     // TODO: test force kill
@@ -432,7 +430,7 @@ describe('worker-pool', function() {
       pool.ensureMaximumWorkers(arg).then(function() {
         pool.workerCount().should.equal(count);
         done();
-      }).fail(done);
+      }).catch(done);
       pool.workerCount().should.equal(count);
     }
 
@@ -450,14 +448,14 @@ describe('worker-pool', function() {
       createPool();
       pool.addWorker().then(function() {
         assertNothingHappens(pool, undefined, done);
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should do nothing when worker count equals requested maximum', function(done) {
       createPool();
       pool.addWorker().then(function() {
         assertNothingHappens(pool, 1, done);
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should do nothing when worker count less than requested maximum', function(done) {
@@ -466,7 +464,7 @@ describe('worker-pool', function() {
         return pool.addWorker();
       }).then(function() {
         assertNothingHappens(pool, 3, done);
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should remove one worker when one exists', function(done) {
@@ -476,7 +474,7 @@ describe('worker-pool', function() {
       }).then(function() {
         pool.workerCount().should.equal(0);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should remove one worker when two exists', function(done) {
@@ -486,7 +484,7 @@ describe('worker-pool', function() {
       }).then(function() {
         pool.workerCount().should.equal(1);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should remove two workers when two exist', function(done) {
@@ -496,7 +494,7 @@ describe('worker-pool', function() {
       }).then(function() {
         pool.workerCount().should.equal(0);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should remove two workers when three exist', function(done) {
@@ -506,7 +504,7 @@ describe('worker-pool', function() {
       }).then(function() {
         pool.workerCount().should.equal(1);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should remove three workers when three exist', function(done) {
@@ -516,7 +514,7 @@ describe('worker-pool', function() {
       }).then(function() {
         pool.workerCount().should.equal(0);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should remove three workers when four exist', function(done) {
@@ -526,7 +524,7 @@ describe('worker-pool', function() {
       }).then(function() {
         pool.workerCount().should.equal(1);
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
   });
@@ -537,7 +535,7 @@ describe('worker-pool', function() {
       createPool();
       pool.shutdown().then(function() {
         done();
-      }).fail(done);
+      }).catch(done);
     });
 
     it('should destroy all workers', function(done) {
@@ -547,7 +545,7 @@ describe('worker-pool', function() {
       }).then(function() {
         pool.workerCount().should.equal(0);
         done();
-      }).fail(done);
+      }).catch(done);
     });
   });
 
@@ -560,7 +558,7 @@ describe('worker-pool', function() {
         testEmitter.on("worker:pool:available", function() {
           done();
         });
-        pool.addWorker().fail(done);
+        pool.addWorker().catch(done);
       });
 
       it('should emit when pool returns to available', function(done) {
@@ -577,7 +575,7 @@ describe('worker-pool', function() {
 
         pool.addWorker().then(function(worker) {
           worker.invoke('returnResult');
-        }).fail(done);
+        }).catch(done);
       });
 
     });
@@ -598,8 +596,8 @@ describe('worker-pool', function() {
         });
 
         pool.addWorker().then(function(worker) {
-          worker.invoke('returnResult').fail(done);
-        }).fail(done);
+          worker.invoke('returnResult').catch(done);
+        }).catch(done);
       });
 
       it('should emit when pool returns to unavailable', function(done) {
@@ -616,9 +614,9 @@ describe('worker-pool', function() {
 
         pool.addWorker().then(function(worker) {
           worker.invoke('returnResult').then(function() {
-            worker.invoke('returnResult').fail(done);
-          }).fail(done);
-        }).fail(done);
+            worker.invoke('returnResult').catch(done);
+          }).catch(done);
+        }).catch(done);
       });
 
     });
@@ -652,7 +650,7 @@ describe('worker-pool', function() {
       });
       pool.addWorker().then(function(worker1) {
         pool.addWorker().then(function(worker2) {
-          worker1.invoke('returnResult').fail(done);
+          worker1.invoke('returnResult').catch(done);
 
           pool.stats().should.deep.equal({
             atCapacityWorkerCount: 0,
@@ -670,8 +668,8 @@ describe('worker-pool', function() {
           });
 
           done();
-        }).fail(done);
-      }).fail(done);
+        }).catch(done);
+      }).catch(done);
     });
 
   });

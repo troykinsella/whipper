@@ -22,7 +22,7 @@ function mockResolvedPromise(resolved, callCB) {
       }
       return this;
     },
-    fail: function() {
+    catch: function() {
       return this;
     }
   };
@@ -69,7 +69,7 @@ describe('load-strategy', function() {
         bls.selectWorker().then(function(worker) {
           worker.should.equal("worker");
           done();
-        }).fail(done);
+        }).catch(done);
       });
 
       it('should create a worker when unavailable and below max', function(done) {
@@ -91,7 +91,7 @@ describe('load-strategy', function() {
         bls.selectWorker().then(function(worker) {
           worker.should.equal("worker");
           done();
-        }).fail(done);
+        }).catch(done);
       });
 
       it('should await available worker when at capacity', function(done) {
@@ -110,7 +110,7 @@ describe('load-strategy', function() {
         bls.selectWorker().then(function(worker) {
           worker.should.equal("worker");
           done();
-        }).fail(done);
+        }).catch(done);
 
         setTimeout(function() {
           testEmitter.emit("worker:pool:available", "worker");

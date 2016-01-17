@@ -1,7 +1,6 @@
 /*jshint -W030 */
 "use strict";
 
-const Q = require('q');
 const EventEmitter = require('events').EventEmitter;
 const assert = require('assert');
 
@@ -11,7 +10,6 @@ const Call = require('../../lib/call');
 const CallDispatcher = require('../../lib/call-dispatcher');
 
 chai.should();
-Q.longStackSupport = true;
 
 var cd;
 var testEmitter;
@@ -51,7 +49,7 @@ describe('call-dispatcher', function() {
               cb({}); // Mock worker-handle
               return this;
             },
-            fail: function() {}
+            catch: function() {}
           };
         }
       };
@@ -78,7 +76,7 @@ describe('call-dispatcher', function() {
               cb({}); // Mock worker-handle
               return this;
             },
-            fail: function() {}
+            catch: function() {}
           };
         }
       };
@@ -122,7 +120,7 @@ describe('call-dispatcher', function() {
               cb(null); // But then don't resolve a worker
               return this;
             },
-            fail: function(cb) {}
+            catch: function(cb) {}
           };
         }
       };
@@ -134,7 +132,7 @@ describe('call-dispatcher', function() {
         assert.fail("Call invoked in error condition");
       };
 
-      c.deferred.promise.fail(function(err) {
+      c.promise.catch(function(err) {
         err.should.be.an('Error');
         done();
       });
@@ -179,7 +177,7 @@ describe('call-dispatcher', function() {
               cb({});
               return this;
             },
-            fail: function(cb) {}
+            catch: function(cb) {}
           };
         }
       };

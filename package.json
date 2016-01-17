@@ -38,9 +38,9 @@
   },
   "license": "MIT",
   "dependencies": {
+    "es6-promise": "^3.0.2",
     "joi": "^7.0.0",
     "linked-map": "^2.2.2",
-    "lodash": "^3.10.1",
-    "q": "^1.4.1"
+    "lodash": "^3.10.1"
   }
 }
