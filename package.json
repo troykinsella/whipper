@@ -1,6 +1,6 @@
 {
   "name": "whipper",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A child process management library for node.js",
   "homepage": "https://github.com/troykinsella/whipper",
   "repository": {
