@@ -36,7 +36,12 @@ function hi(person) {
 
 // Expose the interface by which whipper will call me
 module.exports = {
-
+  initialize: function(arg, done) {
+    process.nextTick(function() {
+          done(null, 'ready');
+    });
+  },
+  
   sayHi: function(person) {
     // Reply now
     return hi(person);
@@ -92,6 +97,13 @@ var whipper = new Whipper({
   // Access logging output
   logger: function(level, message) {
     console.log("whipper: ["+ level + "] " + message);
+  },
+  
+  // Worker init message.  Sent to new worker immediately after the process has spawned and before its available
+  // to the pool
+  initWorker: {
+    message: "initialize",
+    args: "region"
   }
 
   // More docs. Coming soon.
